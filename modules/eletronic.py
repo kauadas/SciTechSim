@@ -11,7 +11,7 @@ class component():
 
         self.v = 0
 
-        self.r = infos.get("r") or 10
+        self.r = infos.get("r",10)
         
         self.terminal = 1
 
@@ -19,9 +19,9 @@ class component():
 
         self.hz = 0
 
-        self.temp = infos.get('temp') or 20
+        self.temp = infos.get('temp',20)
 
-        self.max_temp = infos.get('max_temp') or 100
+        self.max_temp = infos.get('max_temp',200)
 
         self.break_ = False
 
@@ -68,7 +68,7 @@ class resistor(component):
 class capacitor(component):
     def __init__(self, infos: dict):
         super().__init__(infos)
-        self.C = infos.get('c') or 10
+        self.C = infos.get('c',10)
         
 
     def upgrade(self, i,v,hz):
@@ -92,10 +92,10 @@ class capacitor(component):
 class battery(component):
     def __init__(self, infos: dict):
         super().__init__(infos)
-        self.I = infos.get('max_i') or 1200
-        self.v = infos.get('v') or 12
-        self.i = infos.get("i") or 2
-        self.hz = infos.get("hz") or 0
+        self.I = infos.get('max_i',1200)
+        self.v = infos.get('v',12) 
+        self.i = infos.get("i",2) 
+        
 
     def upgrade(self):
         if self.I > self.i:
@@ -108,9 +108,9 @@ class source(component):
     def __init__(self, infos: dict):
         super().__init__(infos)
         
-        self.v = infos.get('v') or 12
-        self.i = infos.get("i") or 2
-        self.hz = infos.get("hz") or 1
+        self.v = infos.get('v',12) 
+        self.i = infos.get("i",2) 
+        self.hz = infos.get("hz",1)
 
         if infos['type'] not in ["CC","CA"]:
             print("tipo de corrente invalido arrombado")

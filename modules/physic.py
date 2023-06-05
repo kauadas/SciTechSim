@@ -13,7 +13,13 @@ class body:
         self.v = infos.get("v", [0, 0, 0])
         self.a = infos.get("a", [0, 0, 0])
 
+        self.colision = {}
+
 
     def upgrade(self):
         self.pos = add_lists(self.pos,self.v)
         self.v = add_lists(self.v,self.a)
+
+def to_vector(i: float,a: list):
+    return [i*math.cos(x) for x in a]
+    
