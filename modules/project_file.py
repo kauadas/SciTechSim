@@ -23,6 +23,7 @@ class project:
         with open(self.dir,"w") as ProjFile:
             data = json.dumps(self.project)
             ProjFile.write(data)
+            print(data)
             ProjFile.close()
 
         

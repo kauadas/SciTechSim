@@ -20,7 +20,8 @@ project = None
 
 
 def load_project(_dir: list):
-    print("loading project")
+    global project
+    print("loading project",_dir)
     project = project_file.project(_dir[0])
 
 class screenManager0(ScreenManager):
@@ -32,7 +33,7 @@ class screenManager0(ScreenManager):
 
 
 class fileSelector(Popup):
-    def __init__(self,_type: list = None,data: str = "",callback=None, **kwargs):
+    def __init__(self,_type: list = [],data: str = "",callback=None, **kwargs):
         super().__init__(**kwargs)
         base = BoxLayout(orientation='vertical')
         
@@ -46,7 +47,7 @@ class fileSelector(Popup):
         self.files = []
 
         file_chooser = FileChooserIconView()
-        if self.type != "":
+        if len(self.type) > 0:
             file_chooser.filters = map(lambda x: "*"+x, self.type)
         
         file_chooser.rootpath = str(Path.home())
@@ -89,7 +90,8 @@ class fileSelector(Popup):
         self.popup0.open()
 
     def on_ok_press(self,files: list):
-        self.callback(files)
+        if self.callback:
+            self.callback(files)
         self.dismiss()
 
     def create(self,_dir: str):
@@ -112,6 +114,12 @@ class ProjectPopUp(Popup):
 
         open_.on_press = self.open_on_press
 
+        save = Button(text='save project',size_hint = (None,None),size=(100,30))
+        save.background_color = (0,0,0,0)
+
+        save.on_press = self.save
+
+         
         touch = App.get_running_app().root_window.mouse_pos
         ww, wh = App.get_running_app().root_window.size
 
@@ -122,19 +130,34 @@ class ProjectPopUp(Popup):
 
         
         stack_layout.add_widget(open_)
+        stack_layout.add_widget(save)
         self.add_widget(stack_layout)
 
+    def save(self,*args):
+        if project:
+            project.save()
+        
+        message = Popup()
+        message.title = ""
+        message_text = Label(text="projeto salvo!!!")
+        message.size_hint = (None,None)
+        message.size = (200,200)
+        message.add_widget(message_text)
+        message.open()
+        self.dismiss()
     def open_on_press(self,*args):
         
         file = fileSelector(_type=[".json"],callback=load_project)
         file.open()
         self.dismiss()
 
-class home(Screen):
+class action_bar(BoxLayout):
     def __init__(self,**kwargs):
         super().__init__(**kwargs)
+        self.size_hint = (1,None)
+        self.height = 20
 
-        self.actionbar = BoxLayout(size_hint=(1,None),height=20,pos=(2,2))
+
         
         self.project = Button(text="project",size_hint=(None,1),width=50,
                               background_color=(0,0,0,0))
@@ -143,18 +166,32 @@ class home(Screen):
                            background_color=(0,0,0,0))
         
         self.project.on_press = self.project_pop_up
-        self.file.on_press = self.file_pop_up
         
-        self.actionbar.add_widget(self.project)
-        self.actionbar.add_widget(self.file)
+        
+        self.add_widget(self.project)
+        self.add_widget(self.file)
 
+        with self.canvas.before:
+            Color(68/255, 71/255, 90/255, 1.0)
+            self.rect = Rectangle(size=(9999,20),pos=(0,0))
+
+
+    def project_pop_up(self,**args):
+        ProjectPopUp().open()
+
+
+class home(Screen):
+    def __init__(self,**kwargs):
+        super().__init__(**kwargs)
+
+        self.actionbar = action_bar()
+        
         with self.canvas.before:
            Color(40/255, 42/255, 54/255,1)
            self.rect0 = Rectangle(size=(50,50),pos=(0,0))
-           Color(68/255, 71/255, 90/255, 1.0)
-           self.rect1 = Rectangle(size=(9999,20),pos=(0,0))
+           
 
-
+        self.rect1 = self.actionbar.rect
         
         
         self.bind(size=self.on_resize)
@@ -170,9 +207,7 @@ class home(Screen):
 
         self.actionbar.pos = (0,size[1]-20)
         
-    def project_pop_up(self,**args):
-        ProjectPopUp().open()
-
+    
     
 
         
