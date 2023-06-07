@@ -8,26 +8,33 @@ class terminal:
         self.v = 0
         self.i = 0
         self.hz = 0
-        self.out = []
+        self.out = {}
 
     def set(self,**kwargs):
         self.v = kwargs.get('v',self.v)
         self.i = kwargs.get('i',self.i)
         self.hz = kwargs.get('hz',self.hz)
 
+    def clear(self):
+        self.v = 0
+        self.i = 0
+        self.hz = 0
+
 # classe pai component
 class component:
-    def __init__(self,infos: dict):
+    def __init__(self,**kwargs):
+
+        self.name = kwargs.get("name")
 
         self.terminals = {}
 
-        self.r = infos.get("r",10)
+        self.r = kwargs.get("r",10)
 
         self.time = 1
 
-        self.temp = infos.get('temp',20)
+        self.temp = kwargs.get('temp',20)
 
-        self.max_temp = infos.get('max_temp',200)
+        self.max_temp = kwargs.get('max_temp',200)
 
         self.is_break = False
 
@@ -39,15 +46,34 @@ class component:
                 "terminals": self.terminals
             }
 
-    def add_connection(self,component,terminal: str):
-        pass
+    def add_connection(self,component,terminal1: str,terminal2: str):
+        self.terminals[terminal1].outs[component.name] = [component,terminal2]
         
     def remove_connection(self,component):
-        pass
+        self.terminals[terminal1].outs.pop(component.name)
         
     def forward(self):
+        for k,v in self.terminals.items():
+            for i,t2 in v.out.values():
+                i.set(v=t.v,i=t.i,hz=t.hz)
+
+    def upgrade(self):
         pass
 
-    def upgrade(self,i,v,hz):
-        pass
 
+class source(component):
+    def __init__(self, kwargs):
+        super().__init__(kwargs)
+
+        self.terminals = {"+": terminal(),
+                          "-": terminal()}
+
+        self.V = kwargs.get('voltage',12)
+
+        self.i = kwargs.get('amparage',2)
+
+        self.hz = kwargs.get('frequency',1)
+
+
+    def upgrade(self):
+        pass
