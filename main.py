@@ -162,14 +162,15 @@ class action_bar(BoxLayout):
         self.project = Button(text="project",size_hint=(None,1),width=50,
                               background_color=(0,0,0,0))
         
-        self.file = Button(text="file",size_hint=(None,1),width=50,
+        self.home = Button(text="home",size_hint=(None,1),width=50,
                            background_color=(0,0,0,0))
         
         self.project.on_press = self.project_pop_up
+        self.home.on_press = lambda *args: self.trocar_tela("home")
         
         
         self.add_widget(self.project)
-        self.add_widget(self.file)
+        self.add_widget(self.home)
 
         with self.canvas.before:
             Color(68/255, 71/255, 90/255, 1.0)
@@ -179,10 +180,15 @@ class action_bar(BoxLayout):
     def project_pop_up(self,**args):
         ProjectPopUp().open()
 
+    def trocar_tela(self,tela):
+        App.get_running_app().root.current = tela
+
 
 class home(Screen):
     def __init__(self,**kwargs):
         super().__init__(**kwargs)
+
+        self.name = "home"
 
         self.actionbar = action_bar()
         
@@ -208,6 +214,85 @@ class home(Screen):
         self.actionbar.pos = (0,size[1]-20)
         
     
+class pcbEditor(Screen):
+    def __init__(self,**kwargs):
+        super().__init__(**kwargs)
+
+        self.name = "pcbeditor"
+
+        self.actionbar = action_bar()
+        
+        with self.canvas.before:
+           Color(40/255, 42/255, 54/255,1)
+           self.rect0 = Rectangle(size=(50,50),pos=(0,0))
+           
+
+        self.rect1 = self.actionbar.rect
+        
+        
+        self.bind(size=self.on_resize)
+
+        self.add_widget(self.actionbar)
+        
+
+    def on_resize(self,w,size):
+        print(size)
+        self.rect0.size = size
+        self.rect1.size = (size[0],20)
+        self.rect1.pos = (0,size[1]-20)
+
+        self.actionbar.pos = (0,size[1]-20)
+        
+
+class GeneralEditor(Screen):
+    def __init__(self,**kwargs):
+        super().__init__(**kwargs)
+
+        self.name = "editor"
+
+        self.actionbar = action_bar()
+        
+        with self.canvas.before:
+           Color(40/255, 42/255, 54/255,1)
+           self.rect0 = Rectangle(size=(50,50),pos=(0,0))
+           
+
+        self.rect1 = self.actionbar.rect
+        
+        
+        self.bind(size=self.on_resize)
+
+        self.add_widget(self.actionbar)
+        
+
+    def on_resize(self,w,size):
+        print(size)
+        self.rect0.size = size
+        self.rect1.size = (size[0],20)
+        self.rect1.pos = (0,size[1]-20)
+
+        self.actionbar.pos = (0,size[1]-20)
+        
+    
+    
+
+        
+
+    
+
+        
+        
+
+    
+    
+
+        
+
+    
+
+        
+        
+
     
 
         

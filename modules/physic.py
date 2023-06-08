@@ -1,4 +1,10 @@
 import math
+import time
+
+G = 6.674*(10**-11)
+K = 9*(10**9)
+H = 6.62607015*(10**-36)
+C = 299792458
 
 # soma duas listas
 def add_lists(list1: list, list2: list):
@@ -20,12 +26,13 @@ def abs_vector(x: list):
 
 #classe pai body representa corpos físicos
 class body:
-    def __init__(self,infos: dict):
-        self.m = infos.get("m", 0)
-        self.Q = infos.get("Q", 0)
-        self.pos = infos.get("pos", [0, 0, 0])
-        self.v = infos.get("v", [0, 0, 0])
-        self.a = infos.get("a", [0, 0, 0])
+    def __init__(self,**kwargs):
+        self.m = kwargs.get("m", 0)
+        self.Q = kwargs.get("Q", 0)
+        self.pos = kwargs.get("pos", [0, 0, 0])
+        self.v = kwargs.get("v", [0, 0, 0])
+        self.a = kwargs.get("a", [0, 0, 0])
+        
 
         self.colision = {}
 
@@ -33,6 +40,23 @@ class body:
     def upgrade(self):
         self.pos = add_lists(self.pos,self.v)
         self.v = add_lists(self.v,self.a)
+
+    def is_collide(self,obj2):
+        for key,value in self.colision.items():
+            pass
+
+class ambient:
+    def __init__(self,**kwargs):
+        self.objects = []
+
+        self.G = kwargs.get("G",G)
+        self.K = kwargs.get("K",K)
+        self.time = kwargs.get("time",1)
+
+    def upgrade(self):
+        pass
+
+        
 
 def to_vector(i: float,ab: list):
     abs_ab = abs_vector(ab)
