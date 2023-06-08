@@ -2,6 +2,13 @@
 import math
 import time
 
+
+#classe que representa a corrente eletrica e descreve seu comportamento
+
+class current:
+    #depois escrevo meh
+    pass
+
 #classe pai terminal
 class terminal:
     def __init__(self):
@@ -11,9 +18,9 @@ class terminal:
         self.out = {}
 
     def set(self,**kwargs):
+        
         self.v = kwargs.get('v',self.v)
         self.i = kwargs.get('i',self.i)
-        self.hz = kwargs.get('hz',self.hz)
 
     def clear(self):
         self.v = 0
@@ -47,33 +54,81 @@ class component:
             }
 
     def add_connection(self,component,terminal1: str,terminal2: str):
-        self.terminals[terminal1].outs[component.name] = [component,terminal2]
+        self.terminals[terminal1].out[component.name] = [component,terminal2]
         
     def remove_connection(self,component):
-        self.terminals[terminal1].outs.pop(component.name)
+        self.terminals[terminal1].out.pop(component.name)
         
     def forward(self):
         for k,v in self.terminals.items():
             for i,t2 in v.out.values():
-                i.set(v=t.v,i=t.i,hz=t.hz)
+                i.get_terminal(t2).set(v=v.v,i=v.i,hz=v.hz)
+                
+                
+
+    def get_terminal(self,terminal: str):
+        if terminal in self.terminals:
+            return self.terminals.get(terminal)
+
+        else:
+            return None
 
     def upgrade(self):
         pass
 
 
 class source(component):
-    def __init__(self, kwargs):
-        super().__init__(kwargs)
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
 
         self.terminals = {"+": terminal(),
                           "-": terminal()}
 
         self.V = kwargs.get('voltage',12)
-
+        self.Dv = self.V
         self.i = kwargs.get('amparage',2)
-
+        self.Di = self.i
         self.hz = kwargs.get('frequency',1)
-
+        self.Dhz = self.hz
 
     def upgrade(self):
-        pass
+        self.get_terminal("+").set(v=self.V,i=self.i,hz=self.hz)
+
+        self.forward()
+
+        self.V = 0
+        self.i = 0
+        self.hz = 0
+
+
+    
+
+        
+
+class condutor(component):
+    def __init__(self,**kwargs):
+        super().__init__(**kwargs)
+
+        self.terminals = {"+": terminal(),
+                          "-": terminal()}
+
+        
+    def upgrade(self):
+        t1 = self.get_terminal("+")
+        self.get_terminal('-').set(v=t1.v,i=t1.i,hz=t1.hz)
+        
+        self.forward()
+
+
+S1 = source(name="source 1")
+
+F1 = condutor(name="condutor 1")
+
+S1.add_connection(F1, "+", "+")
+F1.add_connection(S1, "-", "-")
+
+while True:
+    time.sleep(1)
+    S1.upgrade()
+    F1.upgrade()
+    print(F1.get_terminal("-").v == 12)
