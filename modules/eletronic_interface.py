@@ -7,34 +7,40 @@ from modules import eletronic
 class Component(Widget):
     def __init__(self,sprite: str,terminals: dict, **kwargs):
         super().__init__(**kwargs)
-        self.sprite = Image(allow_stretch=True,keep_ratio=False)
+        self.sprite = Image(allow_stretch=True,size_hint=(None,None))
+        self.sprite.width = (self.size[0]+self.size[1])/2
         self.sprite.source = sprite
+        self.add_widget(self.sprite)
 
         self.terminals = terminals
 
+        
         self.size_hint = (None, None)
-        self.size = (50, 50) 
-        self.color = Color(1, 0, 0)  
+         
 
         self.bind(pos=self.update, size=self.update)
 
-        self.add_widget(self.sprite)
+        
 
     def update(self, *args):
         self.sprite.pos = self.pos
-        self.sprite.size = self.size
+        
+        
 
 class Resistor(Component):
-    def __init__(self):
+    def __init__(self,**kwargs):
         super().__init__("modules/assets/resistor.png", {
             "1": (-5,-5),
-            "2": (5,5)})
+            "2": (5,5)},**kwargs)
+
+            
 
 class CircuitEditor(Widget):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-        self.components = {}
+        self.size_hint = (None,None)
+        self.components = []
         
         with self.canvas:
             Color(1,1,1,1)
@@ -46,5 +52,9 @@ class CircuitEditor(Widget):
     def update(self, *args):
         self.rect.pos = self.pos
         self.rect.size = self.size
+
+    def add_component(component):
+        pass
+
 
     

@@ -266,8 +266,7 @@ class pcbEditor(Screen):
             "center_y": 0.5
         }
 
-        
-        self.circuit_editor.add_widget()
+        self.circuit_editor.add_widget(Resistor(size=(100,100),pos=(100,100)))
         
         
         with self.canvas.before:
