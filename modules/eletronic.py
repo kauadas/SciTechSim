@@ -11,16 +11,28 @@ class current:
 
 #classe pai terminal
 class terminal:
-    def __init__(self):
+    def __init__(self,polarity: str = "+"):
+        if polarity not in ["+","-"]:
+            raise ValueError("Invalid polarity. Valid polarities are '+' and '-'.")
+
         self.v = 0
         self.i = 0
         self.hz = 0
         self.out = {}
+        if polarity == "+":
+            self.polarity = 1
+
+        else:
+            self.polarity = -1
+
+ 
+            
 
     def set(self,**kwargs):
         
-        self.v = kwargs.get('v',self.v)
-        self.i = kwargs.get('i',self.i)
+        self.v = kwargs.get('v',self.v)*self.polarity
+        self.i = kwargs.get('i',self.i)*self.polarity
+        self.hz = kwargs.get("hz",self.hz)
 
     def clear(self):
         self.v = 0
@@ -81,8 +93,8 @@ class source(component):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-        self.terminals = {"+": terminal(),
-                          "-": terminal()}
+        self.terminals = {"+": terminal(polarity="+"),
+                          "-": terminal(polarity="-")}
 
         self.V = kwargs.get('voltage',12)
         self.Dv = self.V
@@ -93,12 +105,10 @@ class source(component):
 
     def upgrade(self):
         self.get_terminal("+").set(v=self.V,i=self.i,hz=self.hz)
+        self.get_terminal("-").set(v=self.V,i=self.i,hz=self.hz)
 
         self.forward()
 
-        self.V = 0
-        self.i = 0
-        self.hz = 0
 
 
     
@@ -109,8 +119,8 @@ class condutor(component):
     def __init__(self,**kwargs):
         super().__init__(**kwargs)
 
-        self.terminals = {"+": terminal(),
-                          "-": terminal()}
+        self.terminals = {"+": terminal(polarity="+"),
+                          "-": terminal(polarity="-")}
 
         
     def upgrade(self):
@@ -124,11 +134,11 @@ S1 = source(name="source 1")
 
 F1 = condutor(name="condutor 1")
 
-S1.add_connection(F1, "+", "+")
-F1.add_connection(S1, "-", "-")
+S1.add_connection(F1, "-", "+")
+
 
 while True:
     time.sleep(1)
     S1.upgrade()
     F1.upgrade()
-    print(F1.get_terminal("-").v == 12)
+    print(F1.get_terminal("-").v)
