@@ -1,5 +1,6 @@
 from kivy.uix.widget import Widget
 from kivy.uix.image import Image
+from kivy.uix.stacklayout import StackLayout
 from kivy.graphics import Color,Rectangle, Line, Ellipse, Triangle
 
 from modules import eletronic
@@ -12,6 +13,8 @@ class Component(Widget):
         self.sprite.source = sprite
         self.add_widget(self.sprite)
 
+        self.circuit_pos = [0,0]
+
         self.terminals = terminals
 
         
@@ -23,7 +26,11 @@ class Component(Widget):
         
 
     def update(self, *args):
+        # Verificar os limites do CircuitEditor
+
         self.sprite.pos = self.pos
+
+        self.sprite.size = self.size
         
         
 
@@ -53,8 +60,13 @@ class CircuitEditor(Widget):
         self.rect.pos = self.pos
         self.rect.size = self.size
 
-    def add_component(component):
-        pass
+        for i in self.components:
+            i.x = self.x + i.circuit_pos[0]
+            i.y = self.y + i.circuit_pos[1]
+
+    def add_component(self,component: Component):
+        self.components.append(component)
+        self.add_widget(component)
 
 
     

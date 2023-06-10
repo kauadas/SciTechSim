@@ -244,7 +244,7 @@ class home(Screen):
         
 
     def on_resize(self,w,size):
-        print(size)
+        
         self.rect0.size = size
         
 
@@ -265,8 +265,10 @@ class pcbEditor(Screen):
             "center_x": 0.5,
             "center_y": 0.5
         }
-
-        self.circuit_editor.add_widget(Resistor(size=(100,100),pos=(100,100)))
+        
+        self.R1 = Resistor(size=(100,100),pos=(100,100))
+        self.circuit_editor.add_component(self.R1)
+        self.R1.circuit_pos = [100,100]
         
         
         with self.canvas.before:
@@ -284,10 +286,12 @@ class pcbEditor(Screen):
         
 
     def on_resize(self,w,size):
-        print(size)
+       
         self.rect0.size = size
         
         self.actionbar.pos = (0,size[1]-20)
+
+        self.R1.pos = self.circuit_editor.pos
         
         
 
