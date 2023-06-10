@@ -11,7 +11,9 @@ from kivy.uix.textinput import TextInput
 from kivy.uix.filechooser import FileChooserIconView
 from kivy.uix.stacklayout import StackLayout
 from kivy.uix.layout import Layout
-from kivy.graphics import Color, Rectangle
+from kivy.graphics import Color, Rectangle, Line
+
+from modules.eletronic_interface import Resistor,CircuitEditor
 
 from modules import project_file
 from pathlib import Path
@@ -29,6 +31,7 @@ class screenManager0(ScreenManager):
         super().__init__(**kwargs)
 
         self.add_widget(home())
+        self.add_widget(pcbEditor())
 
 
 
@@ -151,6 +154,27 @@ class ProjectPopUp(Popup):
         file.open()
         self.dismiss()
 
+from kivy.uix.widget import Widget
+
+
+
+class SimulationEditor(Widget):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        
+        with self.canvas:
+            Color(0,0,0,1)
+            self.rect = Rectangle(pos=self.pos,size=self.size)
+
+        
+        self.bind(size=self.update_size,pos=self.update_pos)
+
+    def update_size(self,w,size):
+        self.rect.size = size
+
+    def update_pos(self,w,pos):
+        self.rect.pos = pos
+
 class action_bar(BoxLayout):
     def __init__(self,**kwargs):
         super().__init__(**kwargs)
@@ -162,19 +186,33 @@ class action_bar(BoxLayout):
         self.project = Button(text="project",size_hint=(None,1),width=50,
                               background_color=(0,0,0,0))
         
-        self.home = Button(text="home",size_hint=(None,1),width=50,
+        self.home = Button(text="Home",size_hint=(None,1),width=50,
                            background_color=(0,0,0,0))
+        self.home.on_press = lambda *args: self.trocar_tela("home")
+
+        self.pcb = Button(text="Pcb Editor",size_hint=(None,1),width=70,
+                           background_color=(0,0,0,0))
+        self.pcb.on_press = lambda *args: self.trocar_tela("pcbeditor")
         
         self.project.on_press = self.project_pop_up
-        self.home.on_press = lambda *args: self.trocar_tela("home")
+        
         
         
         self.add_widget(self.project)
         self.add_widget(self.home)
+        self.add_widget(self.pcb)
 
         with self.canvas.before:
             Color(68/255, 71/255, 90/255, 1.0)
             self.rect = Rectangle(size=(9999,20),pos=(0,0))
+
+        self.bind(size=self.update_size,pos=self.update_pos)
+
+    def update_size(self,w,size):
+        self.rect.size = size
+
+    def update_pos(self,w,pos):
+        self.rect.pos = pos
 
 
     def project_pop_up(self,**args):
@@ -208,12 +246,11 @@ class home(Screen):
     def on_resize(self,w,size):
         print(size)
         self.rect0.size = size
-        self.rect1.size = (size[0],20)
-        self.rect1.pos = (0,size[1]-20)
+        
 
         self.actionbar.pos = (0,size[1]-20)
         
-    
+
 class pcbEditor(Screen):
     def __init__(self,**kwargs):
         super().__init__(**kwargs)
@@ -221,6 +258,17 @@ class pcbEditor(Screen):
         self.name = "pcbeditor"
 
         self.actionbar = action_bar()
+
+        self.circuit_editor = CircuitEditor()
+        self.circuit_editor.size_hint = (0.5,0.6)
+        self.circuit_editor.pos_hint = {
+            "center_x": 0.5,
+            "center_y": 0.5
+        }
+
+        
+        self.circuit_editor.add_widget()
+        
         
         with self.canvas.before:
            Color(40/255, 42/255, 54/255,1)
@@ -233,15 +281,15 @@ class pcbEditor(Screen):
         self.bind(size=self.on_resize)
 
         self.add_widget(self.actionbar)
+        self.add_widget(self.circuit_editor)
         
 
     def on_resize(self,w,size):
         print(size)
         self.rect0.size = size
-        self.rect1.size = (size[0],20)
-        self.rect1.pos = (0,size[1]-20)
-
+        
         self.actionbar.pos = (0,size[1]-20)
+        
         
 
 class GeneralEditor(Screen):

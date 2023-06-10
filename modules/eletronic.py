@@ -129,16 +129,3 @@ class condutor(component):
         
         self.forward()
 
-
-S1 = source(name="source 1")
-
-F1 = condutor(name="condutor 1")
-
-S1.add_connection(F1, "-", "+")
-
-
-while True:
-    time.sleep(1)
-    S1.upgrade()
-    F1.upgrade()
-    print(F1.get_terminal("-").v)
