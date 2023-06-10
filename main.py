@@ -266,9 +266,8 @@ class pcbEditor(Screen):
             "center_y": 0.5
         }
         
-        self.R1 = Resistor(size=(100,100),pos=(100,100))
+        self.R1 = Resistor(size=(100,100),pos=(200,100))
         self.circuit_editor.add_component(self.R1)
-        self.R1.circuit_pos = [100,100]
         
         
         with self.canvas.before:

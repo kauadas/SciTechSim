@@ -13,11 +13,10 @@ class Component(Widget):
         self.sprite.source = sprite
         self.add_widget(self.sprite)
 
-        self.circuit_pos = [0,0]
-
+        self.circuit_pos = kwargs.get('pos',(0,0))
+        
         self.terminals = terminals
 
-        
         self.size_hint = (None, None)
          
 
@@ -26,10 +25,7 @@ class Component(Widget):
         
 
     def update(self, *args):
-        # Verificar os limites do CircuitEditor
-
         self.sprite.pos = self.pos
-
         self.sprite.size = self.size
         
         
