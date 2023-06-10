@@ -324,46 +324,10 @@ class GeneralEditor(Screen):
 
         self.actionbar.pos = (0,size[1]-20)
         
-    
-    
-
-        
-
-    
-
-        
-        
-
-    
-    
-
-        
-
-    
-
-        
-        
-
-    
-
-        
-
-    
-
-        
-        
-
-    
-        
-
-
-
-        
-
 class SciTechSim(App):
     def build(self):
         
         return screenManager0()
 
-
-SciTechSim().run()
+if __name__ == "__main__":
+    SciTechSim().run()
