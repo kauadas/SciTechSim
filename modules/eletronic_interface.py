@@ -69,4 +69,3 @@ class CircuitEditor(Widget):
         self.add_widget(component)
 
 
-    
