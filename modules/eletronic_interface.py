@@ -43,7 +43,6 @@ class Multimeter(Component):
 
         self.component = eletronic.Multimeter()
         self.text = Label(text="V: 0 I: 0 Hz: 0",size_hint=(None,None),font_size=10,size=(100,100))
-
         self.add_widget(self.text)
 
         with self.canvas.before:
@@ -54,7 +53,6 @@ class Multimeter(Component):
             Color(0,0,0,1)
             self.terminal1 = Rectangle(pos=(self.pos[0]*0.1,self.pos[1]),size=(self.width*0.1,self.height*0.1))
             self.terminal2 = Rectangle(pos=(self.pos[0]*0.9,self.pos[1]),size=(self.width*0.1,self.height*0.1))
-
 
     def update(self,*args):
         self.rect1.pos = self.pos
