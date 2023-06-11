@@ -5,7 +5,7 @@ import time
 
 #classe que representa a corrente eletrica e descreve seu comportamento
 
-class current:
+class circuit:
     #depois escrevo meh
     pass
 
@@ -75,6 +75,7 @@ class component:
         for k,v in self.terminals.items():
             for i,t2 in v.out.values():
                 i.get_terminal(t2).set(v=v.v,i=v.i,hz=v.hz)
+                i.upgrade()
                 
                 
 
@@ -111,11 +112,29 @@ class source(component):
 
 
 
-    
+class multimeter(component):
+    def __init__(self,**kwargs):
+        self.terminals = {"+": terminal(polarity="+"),
+                          "-": terminal(polarity="-")}
 
+        self.V = 0
         
 
 class condutor(component):
+    def __init__(self,**kwargs):
+        super().__init__(**kwargs)
+
+        self.terminals = {"+": terminal(polarity="+"),
+                          "-": terminal(polarity="-")}
+
+        
+    def upgrade(self):
+        t1 = self.get_terminal("+")
+        self.get_terminal('-').set(v=t1.v,i=t1.i,hz=t1.hz)
+        
+        self.forward()
+
+class Resistor(component):
     def __init__(self,**kwargs):
         super().__init__(**kwargs)
 

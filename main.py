@@ -266,7 +266,7 @@ class pcbEditor(Screen):
             "center_y": 0.5
         }
         
-        self.R1 = Resistor(size=(100,100),pos=(200,100))
+        self.R1 = Resistor(size=(50,50),pos=(100,100))
         self.circuit_editor.add_component(self.R1)
         
         
@@ -278,17 +278,17 @@ class pcbEditor(Screen):
         self.rect1 = self.actionbar.rect
         
         
-        self.bind(size=self.on_resize)
+        self.bind(size=self.upgrade,pos=self.upgrade)
 
         self.add_widget(self.actionbar)
         self.add_widget(self.circuit_editor)
         
 
-    def on_resize(self,w,size):
-       
-        self.rect0.size = size
+    def upgrade(self,*args):
+    
+        self.rect0.size = self.size
         
-        self.actionbar.pos = (0,size[1]-20)
+        self.actionbar.pos = (0,self.size[1]-20)
 
         self.R1.pos = self.circuit_editor.pos
         

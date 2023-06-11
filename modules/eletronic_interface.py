@@ -1,40 +1,57 @@
 from kivy.uix.widget import Widget
 from kivy.uix.image import Image
 from kivy.uix.stacklayout import StackLayout
+from kivy.uix.button import Button
 from kivy.graphics import Color,Rectangle, Line, Ellipse, Triangle
 
 from modules import eletronic
 
 class Component(Widget):
-    def __init__(self,sprite: str,terminals: dict, **kwargs):
+    def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.sprite = Image(allow_stretch=True,size_hint=(None,None))
-        self.sprite.width = (self.size[0]+self.size[1])/2
-        self.sprite.source = sprite
-        self.add_widget(self.sprite)
 
         self.circuit_pos = kwargs.get('pos',(0,0))
         
-        self.terminals = terminals
-
         self.size_hint = (None, None)
-         
+    
 
         self.bind(pos=self.update, size=self.update)
 
-        
+    def on_touch_down(self, touch):
+        if self.collide_point(*touch.pos):
+            touch.grab(self)
+            return True
+
+    def on_touch_move(self, touch):
+        if touch.grab_current is self:
+            self.center = touch.pos
+            self.circuit_pos  = [x - y for x,y in zip(self.pos,self.parent.pos)]
+
+    def on_touch_up(self, touch):
+        if touch.grab_current is self:
+            touch.ungrab(self)
 
     def update(self, *args):
-        self.sprite.pos = self.pos
-        self.sprite.size = self.size
+        
+        self.rect1.pos = self.pos
+        self.terminal1.pos = (self.pos[0]-self.terminal1.size[0],self.pos[1]+self.rect1.size[1]*0.4)
+        self.terminal2.pos = (self.pos[0]+self.terminal1.size[0]*2,self.pos[1]+self.rect1.size[1]*0.4)
+        
         
         
 
 class Resistor(Component):
     def __init__(self,**kwargs):
-        super().__init__("modules/assets/resistor.png", {
-            "1": (-5,-5),
-            "2": (5,5)},**kwargs)
+        super().__init__(**kwargs)
+
+        with self.canvas:
+            Color(139/255, 103/255, 0,1)
+            self.rect1=Rectangle(pos=self.circuit_pos,size=(self.width,self.height*0.5))
+            Color(0,0,0,1)
+            self.terminal1 = Rectangle(pos=self.circuit_pos,size=(self.width*0.5,self.height*0.1))
+            self.terminal2 = Rectangle(pos=self.circuit_pos,size=(self.width*0.5,self.height*0.1))
+
+        self.component = eletronic.Resistor()
 
             
 
