@@ -2,6 +2,7 @@ from kivy.uix.widget import Widget
 from kivy.uix.image import Image
 from kivy.uix.stacklayout import StackLayout
 from kivy.uix.button import Button
+from kivy.uix.label import Label
 from kivy.graphics import Color,Rectangle, Line, Ellipse, Triangle
 
 from modules import eletronic
@@ -14,6 +15,7 @@ class Component(Widget):
         
         self.size_hint = (None, None)
     
+        
 
         self.bind(pos=self.update, size=self.update)
 
@@ -32,12 +34,36 @@ class Component(Widget):
             touch.ungrab(self)
 
     def update(self, *args):
+        pass
         
+        
+class Multimeter(Component):
+    def __init__(self,**kwargs):
+        super().__init__(**kwargs)
+
+        self.component = eletronic.Multimeter()
+        self.text = Label(text="V: 0 I: 0 Hz: 0",size_hint=(None,None),font_size=10,size=(100,100))
+
+        self.add_widget(self.text)
+
+        with self.canvas.before:
+            Color(248/255, 255/255, 0,1)
+            self.rect1 = Rectangle(pos=self.pos,size=self.size)
+            Color(0.5, 0.5, 0.5,1)
+            self.rect2 = Rectangle(pos=(self.pos[0],self.pos[1]*0.6),size=(self.size[0]*0.8,self.size[1]*0.2))
+            Color(0,0,0,1)
+            self.terminal1 = Rectangle(pos=(self.pos[0]*0.1,self.pos[1]),size=(self.width*0.1,self.height*0.1))
+            self.terminal2 = Rectangle(pos=(self.pos[0]*0.9,self.pos[1]),size=(self.width*0.1,self.height*0.1))
+
+
+    def update(self,*args):
         self.rect1.pos = self.pos
-        self.terminal1.pos = (self.pos[0]-self.terminal1.size[0],self.pos[1]+self.rect1.size[1]*0.4)
-        self.terminal2.pos = (self.pos[0]+self.terminal1.size[0]*2,self.pos[1]+self.rect1.size[1]*0.4)
-        
-        
+        self.rect2.pos = (self.pos[0]+self.size[0]*0.1,self.pos[1]+self.size[1]*0.6)
+        self.text.pos = self.rect2.pos
+        self.text.size = self.rect2.size
+        self.text.font_size = self.rect2.size[0]*0.1
+        self.terminal1.pos = (self.pos[0]+self.size[0]*0.1,self.pos[1])
+        self.terminal2.pos = (self.pos[0]+self.size[0]*0.8,self.pos[1])
         
 
 class Resistor(Component):
@@ -53,6 +79,13 @@ class Resistor(Component):
 
         self.component = eletronic.Resistor()
 
+
+    def update(self,*args):
+        self.rect1.pos = self.pos
+        self.terminal1.pos = (self.pos[0]-self.terminal1.size[0],self.pos[1]+self.rect1.size[1]*0.4)
+        self.terminal2.pos = (self.pos[0]+self.terminal1.size[0]*2,self.pos[1]+self.rect1.size[1]*0.4)
+        
+
             
 
 class CircuitEditor(Widget):
@@ -63,7 +96,7 @@ class CircuitEditor(Widget):
         self.components = []
         
         with self.canvas:
-            Color(1,1,1,1)
+            Color(68/255, 71/255, 90/255, 1.0)
             self.rect = Rectangle(pos=self.pos,size=self.size)
 
         

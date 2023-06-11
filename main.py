@@ -13,7 +13,7 @@ from kivy.uix.stacklayout import StackLayout
 from kivy.uix.layout import Layout
 from kivy.graphics import Color, Rectangle, Line
 
-from modules.eletronic_interface import Resistor,CircuitEditor
+from modules.eletronic_interface import Resistor,CircuitEditor, Multimeter
 
 from modules import project_file
 from pathlib import Path
@@ -266,7 +266,10 @@ class pcbEditor(Screen):
             "center_y": 0.5
         }
         
-        self.R1 = Resistor(size=(50,50),pos=(100,100))
+        self.MM1 = Multimeter(size=(100,100),pos=(100,100))
+        self.circuit_editor.add_component(self.MM1)
+
+        self.R1 = Resistor(size=(50,50),pos=(200,200))
         self.circuit_editor.add_component(self.R1)
         
         

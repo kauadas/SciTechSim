@@ -128,12 +128,23 @@ class source(component):
 
 
 
-class multimeter(component):
+class Multimeter(component):
     def __init__(self,**kwargs):
         self.terminals = {"+": terminal(polarity="+"),
                           "-": terminal(polarity="-")}
 
         self.V = 0
+
+        self.i = 0
+
+    def upgrade(self):
+        T1 = self.get_terminal("+")
+        self.V = T1.v
+
+        self.i = T1.i
+
+        self.hz = T1.hz
+
         
 
 class  wire(component):
