@@ -47,9 +47,13 @@ class component:
 
         self.terminals = {}
 
-        self.r = kwargs.get("r",10)
+        self.r = kwargs.get("r",172/10000)
 
         self.time = 1
+        
+        self.Dc = kwargs.get("specific_temp",5)
+
+        self.ambient_temp = kwargs.get("ambient_temp",20)
 
         self.temp = kwargs.get('temp',20)
 
@@ -86,6 +90,18 @@ class component:
         else:
             return None
 
+    def upgrade_status(self):
+        for i in self.terminals.values():
+            if i.i > 0:
+                Q = (i.i**2)*self.r*self.time
+                self.temp += Q/self.Dc
+
+        if self.temp != self.ambient_temp:
+            self.temp += (self.ambient_temp - self.temp)/self.Dc
+
+        if self.temp > self.max_temp:
+            self.is_break = True
+
     def upgrade(self):
         pass
 
@@ -120,15 +136,17 @@ class multimeter(component):
         self.V = 0
         
 
-class condutor(component):
+class  wire(component):
     def __init__(self,**kwargs):
         super().__init__(**kwargs)
+
 
         self.terminals = {"+": terminal(polarity="+"),
                           "-": terminal(polarity="-")}
 
         
     def upgrade(self):
+        self.upgrade_status()
         t1 = self.get_terminal("+")
         self.get_terminal('-').set(v=t1.v,i=t1.i,hz=t1.hz)
         
@@ -138,13 +156,26 @@ class Resistor(component):
     def __init__(self,**kwargs):
         super().__init__(**kwargs)
 
-        self.terminals = {"+": terminal(polarity="+"),
-                          "-": terminal(polarity="-")}
+        self.terminals = {"1": terminal(polarity="+"),
+                          "2": terminal(polarity="+")}
 
         
     def upgrade(self):
-        t1 = self.get_terminal("+")
-        self.get_terminal('-').set(v=t1.v,i=t1.i,hz=t1.hz)
         
-        self.forward()
+        if not self.is_break:
+            self.upgrade_status()
+
+            t1 = self.get_terminal("2")
+            t2 = self.get_terminal("1")
+            if self.get_terminal("1").v > 0:
+                t1 = self.get_terminal("1")
+                t2 = self.get_terminal("2")
+
+            if t1.v > 0:
+                I = t1.v/self.r
+                t2.set(v=t1.v,i=I,hz=t1.hz)
+                print(I)
+
+            self.forward()
+
 

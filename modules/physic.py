@@ -32,6 +32,10 @@ class body:
         self.pos = kwargs.get("pos", [0, 0, 0])
         self.v = kwargs.get("v", [0, 0, 0])
         self.a = kwargs.get("a", [0, 0, 0])
+
+        self.angle = kwargs.get("angle", [0, 0, 0])
+        self.aV = kwargs.get("angular_velocity", [0, 0, 0])
+        self.aA = kwargs.get("angular_aceleration", [0, 0, 0])
         
 
         self.colision = {}
@@ -40,6 +44,8 @@ class body:
     def upgrade(self):
         self.pos = add_lists(self.pos,self.v)
         self.v = add_lists(self.v,self.a)
+        self.angle = add_lists(self.angle,self.aV)
+        self.aV = add_lists(self.aV,self.aA)
 
     def is_collide(self,obj2):
         for key,value in self.colision.items():
