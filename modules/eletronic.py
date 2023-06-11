@@ -51,7 +51,7 @@ class component:
 
         self.time = 1
         
-        self.Dc = kwargs.get("specific_temp",5)
+        self.Dc = kwargs.get("specific_temp",20.92)/4.184
 
         self.ambient_temp = kwargs.get("ambient_temp",20)
 
