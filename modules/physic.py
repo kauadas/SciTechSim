@@ -81,11 +81,10 @@ class wave:
         self.A = kwargs.get("A",2)
         self.E = H*C/self.A
         self.P = self.a * self.T/2
-        self.i = self.P
         self.origin = kwargs.get("origin",[0,0,0])
         self.V = kwargs.get("V",C)
         self.R = 0
 
     def upgrade(self):
-        self.i *= 1/self.R**2
+        self.P *= 1/self.R**2
         self.R += self.V
