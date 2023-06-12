@@ -73,4 +73,12 @@ def to_vector(i: float,ab: list):
 
     return Y
 
-   
+
+class wave:
+    def __init__(self,**kwargs):
+        self.a = kwargs.get("a")
+        self.T = kwargs.get("T")
+        self.A = kwargs.get("A",2)
+        self.E = H*C/self.A
+        self.P = self.a * self.T/2
+        self.V = kwargs.get("V",C)
