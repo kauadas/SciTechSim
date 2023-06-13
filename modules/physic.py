@@ -86,7 +86,4 @@ class wave:
         self.R = 0
 
     def upgrade(self):
-        if self.P > H:
-            self.P *= 1/self.R**2
-            
             self.R += self.V
