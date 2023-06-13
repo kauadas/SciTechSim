@@ -33,8 +33,22 @@ class Component(Widget):
         if touch.grab_current is self:
             touch.ungrab(self)
 
-    def update(self, *args):
-        pass
+    def update_pos(self):
+            p = self.parent
+            
+            if self.x < p.x:
+                self.x = p.x
+
+            elif self.x > p.right:
+                self.x = p.right-self.width
+
+            
+
+            if self.y < p.y:
+                self.y = p.y
+
+            elif self.y > p.top:
+                self.y = p.top-self.height
         
         
 class Multimeter(Component):
@@ -55,6 +69,7 @@ class Multimeter(Component):
             self.terminal2 = Rectangle(pos=(self.pos[0]*0.9,self.pos[1]),size=(self.width*0.1,self.height*0.1))
 
     def update(self,*args):
+        self.update_pos()
         self.rect1.pos = self.pos
         self.rect2.pos = (self.pos[0]+self.size[0]*0.1,self.pos[1]+self.size[1]*0.6)
         self.text.pos = self.rect2.pos
@@ -79,6 +94,8 @@ class Resistor(Component):
 
 
     def update(self,*args):
+        
+        self.update_pos()
         self.rect1.pos = self.pos
         self.terminal1.pos = (self.pos[0]-self.terminal1.size[0],self.pos[1]+self.rect1.size[1]*0.4)
         self.terminal2.pos = (self.pos[0]+self.terminal1.size[0]*2,self.pos[1]+self.rect1.size[1]*0.4)
@@ -92,8 +109,11 @@ class CircuitEditor(Widget):
 
         self.size_hint = (None,None)
         self.components = []
+        self.Button1 = Button(text="add component",size=(100,50),pos=self.pos,
+        font_size=10)
+        self.add_widget(self.Button1)
         
-        with self.canvas:
+        with self.canvas.before:
             Color(68/255, 71/255, 90/255, 1.0)
             self.rect = Rectangle(pos=self.pos,size=self.size)
 
@@ -102,11 +122,17 @@ class CircuitEditor(Widget):
 
     def update(self, *args):
         self.rect.pos = self.pos
+
         self.rect.size = self.size
+
+        self.Button1.x = self.x-self.Button1.width
+        self.Button1.y = self.y+self.height-self.Button1.height
 
         for i in self.components:
             i.x = self.x + i.circuit_pos[0]
             i.y = self.y + i.circuit_pos[1]
+            i.update_pos()
+
 
     def add_component(self,component: Component):
         self.components.append(component)
