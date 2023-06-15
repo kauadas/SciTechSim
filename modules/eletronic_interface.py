@@ -116,10 +116,15 @@ class newComponent(Popup):
 
         self.options = DropDown()
 
+        self.opt1 = Button(text="Resistor",size_hint_y=None,height=40)
+        self.opt1.on_press = lambda *args : self.add("resistor")
         self.add_widget(self.boxLayout)
         self.boxLayout.add_widget(self.options)
 
-        
+    
+    def add(self,_type: str):
+        if _type == "resistor":
+            pass
         
 
 
