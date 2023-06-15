@@ -52,10 +52,12 @@ class Component(Widget):
         
         
 class Multimeter(Component):
-    def __init__(self,**kwargs):
+    def __init__(self,name: str = None,**kwargs):
         super().__init__(**kwargs)
 
-        self.component = eletronic.Multimeter()
+        name = name or "MM1"
+        self.component = eletronic.Multimeter(name=name)
+        print(self.component.get_status())
         self.text = Label(text="V: 0 I: 0 Hz: 0",size_hint=(None,None),font_size=10,size=(100,100))
         self.add_widget(self.text)
 
@@ -80,7 +82,7 @@ class Multimeter(Component):
         
 
 class Resistor(Component):
-    def __init__(self,**kwargs):
+    def __init__(self,name: str = None,**kwargs):
         super().__init__(**kwargs)
 
         with self.canvas:
@@ -90,7 +92,8 @@ class Resistor(Component):
             self.terminal1 = Rectangle(pos=self.circuit_pos,size=(self.width*0.5,self.height*0.1))
             self.terminal2 = Rectangle(pos=self.circuit_pos,size=(self.width*0.5,self.height*0.1))
 
-        self.component = eletronic.Resistor()
+        name = name or "R1"
+        self.component = eletronic.Resistor(name=name)
 
 
     def update(self,*args):
@@ -108,7 +111,7 @@ class CircuitEditor(Widget):
         super().__init__(**kwargs)
 
         self.size_hint = (None,None)
-        self.components = []
+        self.components = {}
         self.Button1 = Button(text="add component",size=(100,50),pos=self.pos,
         font_size=10)
         self.add_widget(self.Button1)
@@ -128,14 +131,14 @@ class CircuitEditor(Widget):
         self.Button1.x = self.x-self.Button1.width
         self.Button1.y = self.y+self.height-self.Button1.height
 
-        for i in self.components:
+        for i in self.components.values():
             i.x = self.x + i.circuit_pos[0]
             i.y = self.y + i.circuit_pos[1]
             i.update_pos()
 
 
     def add_component(self,component: Component):
-        self.components.append(component)
+        self.components[component.component.name] = component
         self.add_widget(component)
 
 

@@ -130,6 +130,8 @@ class source(component):
 
 class Multimeter(component):
     def __init__(self,**kwargs):
+        super().__init__(**kwargs)
+        
         self.terminals = {"+": terminal(polarity="+"),
                           "-": terminal(polarity="-")}
 

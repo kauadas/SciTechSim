@@ -266,7 +266,7 @@ class pcbEditor(Screen):
             "center_y": 0.5
         }
         
-        self.MM1 = Multimeter(size=(100,100),pos=(100,100))
+        self.MM1 = Multimeter(name = "M1",size=(100,100),pos=(100,100))
         self.circuit_editor.add_component(self.MM1)
 
         self.R1 = Resistor(size=(50,50),pos=(200,200))
