@@ -1,8 +1,11 @@
 from kivy.uix.widget import Widget
 from kivy.uix.image import Image
 from kivy.uix.stacklayout import StackLayout
+from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.button import Button
 from kivy.uix.label import Label
+from kivy.uix.popup import Popup
+from kivy.uix.dropdown import DropDown
 from kivy.graphics import Color,Rectangle, Line, Ellipse, Triangle
 
 from modules import eletronic
@@ -103,6 +106,22 @@ class Resistor(Component):
         self.terminal1.pos = (self.pos[0]-self.terminal1.size[0],self.pos[1]+self.rect1.size[1]*0.4)
         self.terminal2.pos = (self.pos[0]+self.terminal1.size[0]*2,self.pos[1]+self.rect1.size[1]*0.4)
         
+class newComponent(Popup):
+    def __init__(self,widget,**kwargs):
+        super().__init__(**kwargs)
+
+        self.add_in = widget
+
+        self.boxLayout = BoxLayout()
+
+        self.options = DropDown()
+
+        self.add_widget(self.boxLayout)
+        self.boxLayout.add_widget(self.options)
+
+        
+        
+
 
             
 
@@ -114,6 +133,7 @@ class CircuitEditor(Widget):
         self.components = {}
         self.Button1 = Button(text="add component",size=(100,50),pos=self.pos,
         font_size=10)
+        self.Button1.on_press = self.on_btn1
         self.add_widget(self.Button1)
         
         with self.canvas.before:
@@ -141,4 +161,6 @@ class CircuitEditor(Widget):
         self.components[component.component.name] = component
         self.add_widget(component)
 
+    def on_btn1(self,*args):
+        newComponent(widget=self).open()
 
