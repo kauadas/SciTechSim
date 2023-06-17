@@ -9,7 +9,7 @@ class circuit:
     #depois escrevo meh
     pass
 
-#classe pai terminal
+#classe que representa um terminal de um componente
 class terminal:
     def __init__(self,polarity: str = "+"):
         if polarity not in ["+","-"]:
@@ -39,7 +39,7 @@ class terminal:
         self.i = 0
         self.hz = 0
 
-# classe pai component
+# classe pai de todos os componentes
 class component:
     def __init__(self,**kwargs):
 

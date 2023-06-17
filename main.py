@@ -266,12 +266,6 @@ class pcbEditor(Screen):
             "center_y": 0.5
         }
         
-        self.MM1 = Multimeter(name = "M1",size=(100,100),pos=(100,100))
-        self.circuit_editor.add_component(self.MM1)
-
-        self.R1 = Resistor(size=(50,50),pos=(200,200))
-        self.circuit_editor.add_component(self.R1)
-        
         
         with self.canvas.before:
            Color(40/255, 42/255, 54/255,1)
@@ -293,8 +287,6 @@ class pcbEditor(Screen):
         
         self.actionbar.pos = (0,self.size[1]-20)
 
-        self.R1.pos = self.circuit_editor.pos
-        
         
 
 class GeneralEditor(Screen):

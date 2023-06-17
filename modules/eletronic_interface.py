@@ -6,10 +6,12 @@ from kivy.uix.button import Button
 from kivy.uix.label import Label
 from kivy.uix.popup import Popup
 from kivy.uix.dropdown import DropDown
+from kivy.uix.textinput import TextInput
 from kivy.graphics import Color,Rectangle, Line, Ellipse, Triangle
 
 from modules import eletronic
 
+# classe pai dos componentes qualquer modificação aqui altera todos os componentes tambem.
 class Component(Widget):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -53,7 +55,8 @@ class Component(Widget):
             elif self.y > p.top:
                 self.y = p.top-self.height
         
-        
+
+# multimetro    
 class Multimeter(Component):
     def __init__(self,name: str = None,**kwargs):
         super().__init__(**kwargs)
@@ -84,9 +87,12 @@ class Multimeter(Component):
         self.terminal2.pos = (self.pos[0]+self.size[0]*0.8,self.pos[1])
         
 
+# objeto resistor
 class Resistor(Component):
     def __init__(self,name: str = None,**kwargs):
         super().__init__(**kwargs)
+
+
 
         with self.canvas:
             Color(139/255, 103/255, 0,1)
@@ -103,30 +109,71 @@ class Resistor(Component):
         
         self.update_pos()
         self.rect1.pos = self.pos
+        self.rect1.size = (self.width,self.height*0.5)
+        self.terminal1.size = (self.width*0.5,self.height*0.1)
         self.terminal1.pos = (self.pos[0]-self.terminal1.size[0],self.pos[1]+self.rect1.size[1]*0.4)
-        self.terminal2.pos = (self.pos[0]+self.terminal1.size[0]*2,self.pos[1]+self.rect1.size[1]*0.4)
+        self.terminal2.size = (self.width*0.5,self.height*0.1)
+        self.terminal2.pos = (self.pos[0]+self.terminal2.size[0]*2,self.pos[1]+self.rect1.size[1]*0.4)
         
+
+# janela de criação de componentes
 class newComponent(Popup):
     def __init__(self,widget,**kwargs):
         super().__init__(**kwargs)
 
-        self.add_in = widget
+        self.widget = widget
 
-        self.boxLayout = BoxLayout()
+        self.layout = StackLayout(orientation='lr-tb')
+
+        
+        self.comp_type = None
+        
+        self.name = TextInput(hint_text="component name...",multiline=False,size_hint_y=None,height=40)
+        self.Size = TextInput(hint_text="component size...",multiline=False,size_hint_y=None,height=40)
+        self.resistance = TextInput(hint_text="component resistance in ohms...",multiline=False,size_hint_y=None,height=40)
+        
 
         self.options = DropDown()
 
+        self.select_type = Button(text="select a component...",size_hint_y=None,height=40)
+        self.select_type.on_press = lambda *args: self.layout.add_widget(self.options)
+
         self.opt1 = Button(text="Resistor",size_hint_y=None,height=40)
-        self.opt1.on_press = lambda *args : self.add("resistor")
-        self.add_widget(self.boxLayout)
-        self.boxLayout.add_widget(self.options)
+        self.opt1.on_press = lambda *args : self.options.select("resistor")
 
+        self.create = Button(text="create",size_hint_y=None,height=40)
+        self.create.on_press = self.on_create
+        self.options.on_select = self.select
+
+        self.add_widget(self.layout)
+        self.layout.add_widget(self.select_type)
+        self.layout.add_widget(self.name)
+        self.layout.add_widget(self.resistance)
+        self.layout.add_widget(self.Size)
+        self.options.add_widget(self.opt1)
     
-    def add(self,_type: str):
-        if _type == "resistor":
-            pass
+    def select(self,_type: str):
+        self.select_type.text = "type: " + _type
+        if _type == "resistor" and self.comp_type != "resistor":
+            self.comp_type = _type
         
+        if _type != None:
+            self.layout.add_widget(self.create)
 
+    def on_create(self,*args):
+        if self.comp_type == "resistor":
+            resistor = Resistor(self.name.text)
+            resistor.component.r = float(self.resistance.text)
+
+            self.widget.add_component(resistor)
+            resistor.pos = self.widget.pos
+            resistor.circuit_pos = (0,0)
+            size = float(self.Size.text)
+            resistor.size = (size,size)
+            
+            
+
+        self.dismiss()
 
             
 
