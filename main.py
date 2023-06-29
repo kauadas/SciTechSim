@@ -13,7 +13,7 @@ from kivy.uix.stacklayout import StackLayout
 from kivy.uix.layout import Layout
 from kivy.graphics import Color, Rectangle, Line
 
-from modules.eletronic_interface import Resistor,CircuitEditor, Multimeter
+from modules.eletronic_interface import Resistor,CircuitEditor, Multimeter, Source
 
 from modules import project_file
 from pathlib import Path
@@ -267,6 +267,8 @@ class pcbEditor(Screen):
         }
         
         
+        self.pos = (0,0)
+
         with self.canvas.before:
            Color(40/255, 42/255, 54/255,1)
            self.rect0 = Rectangle(size=(50,50),pos=(0,0))
