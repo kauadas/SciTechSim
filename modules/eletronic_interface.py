@@ -65,6 +65,7 @@ class Multimeter(Component):
 
         name = name or "MM1"
         self.component = eletronic.Multimeter(name=name)
+        self.type = "multimeter"
         self.text = Label(text="V: 0 I: 0 Hz: 0",size_hint=(None,None),font_size=10,size=(100,100))
         self.add_widget(self.text)
 
@@ -108,6 +109,7 @@ class Resistor(Component):
             self.terminal2 = Rectangle(pos=self.circuit_pos,size=(self.width*0.5,self.height*0.1))
 
         name = name or "R1"
+        self.type = "resistor"
         self.component = eletronic.Resistor(name=name)
 
 
@@ -135,6 +137,7 @@ class Source(Component):
             self.terminal2 = Rectangle(pos=self.circuit_pos,size=(self.width*0.1,self.height*0.1))
 
         name = name or "Source"
+        self.type = "source"
         self.component = eletronic.source(name=name)
 
 
@@ -241,7 +244,29 @@ class newComponent(Popup):
 
         self.dismiss()
 
-            
+class config_component(Popup):
+    def __init__(self,component: Component,**kwargs):
+        super().__init__(**kwargs)
+
+        self.component = component
+        layout = StackLayout(orientation='lr-tb')
+        self.R = TextInput(hint_text="Resistance in ohms",multiline=False,size_hint_y=None,height=40)
+
+        self.ok = Button(text="ok",size_hint_y=None,height=40)
+        self.ok.on_press = self.on_ok
+        if component.type == "resistor":
+            layout.add_widget(self.R)
+
+        layout.add_widget(self.ok)
+
+        self.add_widget(layout)
+        self.open()
+
+    def on_ok(self):
+        if self.component.type == "resistor":
+            self.component.component.r = float(self.R.text)
+
+        self.dismiss()
 
 class CircuitEditor(Widget):
     def __init__(self, **kwargs):
@@ -258,6 +283,10 @@ class CircuitEditor(Widget):
         font_size=10)
         self.Button2.on_press = self.remove_component
         self.add_widget(self.Button2)
+        self.Button3 = Button(text="config component",size=(100,50),pos=self.pos,
+        font_size=10)
+        self.Button3.on_press = self.config_component
+        self.add_widget(self.Button3)
         
         with self.canvas.before:
             Color(68/255, 71/255, 90/255, 1.0)
@@ -277,11 +306,16 @@ class CircuitEditor(Widget):
         self.Button2.x = self.x-self.Button2.width
         self.Button2.y = self.y+self.height-self.Button2.height-50
 
+        self.Button3.x = self.x-self.Button3.width
+        self.Button3.y = self.y+self.height-self.Button3.height-100
+
         for i in self.components.values():
             i.x = self.x + i.circuit_pos[0]
             i.y = self.y + i.circuit_pos[1]
             i.update_pos()
 
+    def config_component(self):
+            config_component(self.components.get(self.select))
 
     def add_component(self,component: Component):
         self.components[component.component.name] = component
