@@ -262,6 +262,7 @@ class newComponent(Popup):
                    
         self.dismiss()
 
+# configurador de componentes
 class config_component(Popup):
     def __init__(self,component: Component,**kwargs):
         super().__init__(**kwargs)
@@ -322,6 +323,7 @@ class config_component(Popup):
 
         self.dismiss()
 
+# criar conexões entre os componentes
 class config_connections(Popup):
     def __init__(self,component: Component,**kwargs):
         super().__init__(**kwargs)
@@ -415,7 +417,7 @@ class config_connections(Popup):
 
         t2 = self.component2.terminals[self.terminal2]
 
-
+# widget editor de circuito
 class CircuitEditor(Widget):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
