@@ -267,8 +267,14 @@ class pcbEditor(Screen):
         }
         
         
-        self.pos = (0,0)
+        self.pos = (0,0) 
 
+        self.teste = Source("f1")
+        self.circuit_editor.add_component(self.teste)
+        self.teste.size = (100,100)
+        self.teste.circuit_pos = (200,200)
+
+        
         with self.canvas.before:
            Color(40/255, 42/255, 54/255,1)
            self.rect0 = Rectangle(size=(50,50),pos=(0,0))

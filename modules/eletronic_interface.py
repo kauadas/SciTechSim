@@ -56,7 +56,7 @@ class Component(Widget):
 
             elif self.y > p.top:
                 self.y = p.top-self.height
-        
+
 
 # multimetro    
 class Multimeter(Component):
@@ -122,6 +122,48 @@ class Resistor(Component):
         self.terminal1.pos = (self.pos[0]-self.terminal1.size[0],self.pos[1]+self.rect1.size[1]*0.4)
         self.terminal2.size = (self.width*0.5,self.height*0.1)
         self.terminal2.pos = (self.pos[0]+self.terminal2.size[0]*2,self.pos[1]+self.rect1.size[1]*0.4)
+
+class Wire(Component):
+    def __init__(self,name:str,t1_pos: tuple,t2_pos: tuple, **kwargs):
+        super().__init__(**kwargs)
+
+        self.color = color
+        self.circuit_pos = t1_pos
+        self.start_point = t1_pos
+
+        self.end_point = t2_pos
+
+        self.T2_scale_x = t2_pos[0]-t1_pos[0]
+
+        self.T2_scale_y = t2_pos[1]-t1_pos[1]
+
+        self.draw_wire()
+        self.size = (self.T2_scale_x,self.T2_scale_y)
+        print(self.size)
+        self.name = name
+        self.component = eletronic.wire(name=self.name)
+
+        
+
+
+    def draw_wire(self):
+        self.canvas.clear()
+
+        if self.start_point and self.end_point:
+            bendX = (self.start_point[0] + self.end_point[0]) / 2
+            bendY = (self.start_point[1] + self.end_point[1]) / 2
+
+            with self.canvas:
+                Color(217/255,135/255,25/255,1)
+                self.line0 = Line(points=[self.start_point[0], self.start_point[1],
+                             bendX, bendY, self.end_point[0], self.end_point[1]],width=2)
+
+
+    def update(self,*args):
+        if self.parent:
+            self.update_pos()
+
+        self.line0.points = [self.pos[0],self.pos[1],self.pos[0]+self.T2_scale_x,self.pos[1]+self.T2_scale_y]
         
 class Source(Component):
     def __init__(self,name: str = None,**kwargs):
@@ -135,6 +177,7 @@ class Source(Component):
             Color(0.5,0.5,0.5,1)
             self.terminal1 = Rectangle(pos=self.circuit_pos,size=(self.width*0.1,self.height*0.1))
             self.terminal2 = Rectangle(pos=self.circuit_pos,size=(self.width*0.1,self.height*0.1))
+            Color(0,0,0,1)
 
         name = name or "Source"
         self.type = "source"
@@ -150,9 +193,9 @@ class Source(Component):
         self.terminal1.pos = (self.pos[0],self.pos[1]+self.rect1.size[1])
         self.terminal2.size = (self.width*0.1,self.height*0.1)
         self.terminal2.pos = (self.pos[0]+self.rect1.size[0]-self.terminal2.size[0],self.pos[1]+self.rect1.size[1])
-   
 
 # janela de criação de componentes
+
 class newComponent(Popup):
     def __init__(self,widget,**kwargs):
         super().__init__(**kwargs)
@@ -166,20 +209,22 @@ class newComponent(Popup):
         
         self.name = TextInput(hint_text="component name...",multiline=False,size_hint_y=None,height=40)
         self.Size = TextInput(hint_text="component size...",multiline=False,size_hint_y=None,height=40)
+        self.Pos = TextInput(hint_text="component Pos in format x,y",multiline=False,size_hint_y=None,height=40)
 
         self.options = DropDown()
 
         self.select_type = Button(text="select a component...",size_hint_y=None,height=40)
         self.select_type.on_press = lambda *args: self.layout.add_widget(self.options)
 
-        self.opt1 = Button(text="Resistor",size_hint_y=None,height=40)
-        self.opt1.on_press = lambda *args : self.options.select("resistor")
 
-        self.opt2 = Button(text="Multimeter",size_hint_y=None,height=40)
-        self.opt2.on_press = lambda *args : self.options.select("multimeter")
+        components = ["resistor","multimeter","source"]
 
-        self.opt3 = Button(text="Source",size_hint_y=None,height=40)
-        self.opt3.on_press = lambda *args : self.options.select("source")
+        opts = []
+        for i in components:
+            opt = Button(text=i.capitalize(),size_hint_y=None,height=40)
+            opt.on_press = lambda *args, c=i: self.options.select(c)
+            opts.append(opt)
+            self.options.add_widget(opt)
 
         self.create = Button(text="create",size_hint_y=None,height=40)
         self.create.on_press = self.on_create
@@ -190,9 +235,7 @@ class newComponent(Popup):
         self.layout.add_widget(self.name)
         
         self.layout.add_widget(self.Size)
-        self.options.add_widget(self.opt1)
-        self.options.add_widget(self.opt2)
-        self.options.add_widget(self.opt3)
+        
     
     def select(self,_type: str):
         self.select_type.text = "type: " + _type
@@ -207,6 +250,8 @@ class newComponent(Popup):
         elif _type == "source" and self.comp_type != "source":
             
             self.comp_type = _type
+
+
         
         if _type != None:
             if self.create.parent != self.layout:
@@ -239,9 +284,10 @@ class newComponent(Popup):
             source.circuit_pos = (0,0)
             size = float(self.Size.text)
             source.size = (size,size)
-            
-            
 
+            
+            
+                   
         self.dismiss()
 
 class config_component(Popup):
@@ -251,20 +297,56 @@ class config_component(Popup):
         self.component = component
         layout = StackLayout(orientation='lr-tb')
         self.R = TextInput(hint_text="Resistance in ohms",multiline=False,size_hint_y=None,height=40)
+        self.V = TextInput(hint_text="voltage",multiline=False,size_hint_y=None,height=40)
+        self.I = TextInput(hint_text="current",multiline=False,size_hint_y=None,height=40)
+        self.Hz = TextInput(hint_text="frequency in hz",multiline=False,size_hint_y=None,height=40)
+
 
         self.ok = Button(text="ok",size_hint_y=None,height=40)
         self.ok.on_press = self.on_ok
+
+        self.connect = Button(text="connect to....",size_hint_y=None,height=40)
+        self.connect.on_press = lambda *args: print("connect")
+
         if component.type == "resistor":
+            self.R.hint_text += f": {str(self.component.component.r)} ohms"
             layout.add_widget(self.R)
 
+        elif component.type == "source":
+            self.V.hint_text += f": {str(self.component.component.V)} volts"
+
+            self.I.hint_text += f": {str(self.component.component.I)} amperes"
+
+            self.Hz.hint_text += f": {str(self.component.component.Hz)} hz"
+            
+            layout.add_widget(self.V)
+            layout.add_widget(self.I)
+            layout.add_widget(self.Hz)
+
         layout.add_widget(self.ok)
+        layout.add_widget(self.connect)
 
         self.add_widget(layout)
         self.open()
 
     def on_ok(self):
         if self.component.type == "resistor":
-            self.component.component.r = float(self.R.text)
+            r = self.R.text
+            if r != "":
+                self.component.component.r = float(r)
+
+        if self.component.type == "source":
+            V = self.V.text
+            i = self.I.text
+            hz = self.Hz.text
+            if V != "":
+                self.component.component.V = float(V)
+            
+            if i != "":
+                self.component.component.I = float(i)
+            
+            if hz != "":
+                self.component.component.Hz = float(hz)
 
         self.dismiss()
 
@@ -315,6 +397,7 @@ class CircuitEditor(Widget):
             i.update_pos()
 
     def config_component(self):
+        if self.select:
             config_component(self.components.get(self.select))
 
     def add_component(self,component: Component):
@@ -322,7 +405,7 @@ class CircuitEditor(Widget):
         self.add_widget(component)
 
     def remove_component(self,*args):
-        if self.select != None:
+        if self.select:
             self.remove_widget(self.components.get(self.select))
             self.components.pop(self.select)
             self.select = None

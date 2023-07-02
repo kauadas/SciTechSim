@@ -115,14 +115,14 @@ class source(component):
 
         self.V = kwargs.get('voltage',12)
         self.Dv = self.V
-        self.i = kwargs.get('amparage',2)
-        self.Di = self.i
-        self.hz = kwargs.get('frequency',1)
-        self.Dhz = self.hz
+        self.I = kwargs.get('amparage',2)
+        self.Di = self.I
+        self.Hz = kwargs.get('frequency',1)
+        self.Dhz = self.Hz
 
     def upgrade(self):
-        self.get_terminal("+").set(v=self.V,i=self.i,hz=self.hz)
-        self.get_terminal("-").set(v=self.V,i=self.i,hz=self.hz)
+        self.get_terminal("+").set(v=self.V,i=self.I,hz=self.hz)
+        self.get_terminal("-").set(v=self.V,i=self.I,hz=self.hz)
 
         self.forward()
 
@@ -169,6 +169,7 @@ class Resistor(component):
     def __init__(self,**kwargs):
         super().__init__(**kwargs)
 
+        self.r = kwargs.get("r",10)
         self.terminals = {"1": terminal(polarity="+"),
                           "2": terminal(polarity="+")}
 
