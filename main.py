@@ -11,7 +11,7 @@ from kivy.uix.textinput import TextInput
 from kivy.uix.filechooser import FileChooserIconView
 from kivy.uix.stacklayout import StackLayout
 from kivy.uix.layout import Layout
-from kivy.graphics import Color, Rectangle, Line
+from kivy.graphics import Color, Rectangle, Line, PushMatrix, PopMatrix, Rotate
 
 from modules.eletronic_interface import Resistor,CircuitEditor, Multimeter, Source
 
@@ -156,8 +156,6 @@ class ProjectPopUp(Popup):
 
 from kivy.uix.widget import Widget
 
-
-
 class SimulationEditor(Widget):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -273,6 +271,12 @@ class pcbEditor(Screen):
         self.circuit_editor.add_component(self.teste)
         self.teste.size = (100,100)
         self.teste.circuit_pos = (200,200)
+        with self.teste.canvas.before:
+            PushMatrix()
+            rotate = Rotate(angle=45)
+
+        with self.teste.canvas.after:
+            PopMatrix()
 
         
         with self.canvas.before:
