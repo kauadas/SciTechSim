@@ -168,7 +168,6 @@ class Source(Component):
         self.terminal2.pos = (self.pos[0]+self.rect1.size[0]-self.terminal2.size[0],self.pos[1]+self.rect1.size[1])
 
 # janela de criação de componentes
-
 class newComponent(Popup):
     def __init__(self,widget,**kwargs):
         super().__init__(**kwargs)
