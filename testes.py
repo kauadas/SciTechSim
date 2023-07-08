@@ -1,38 +1,32 @@
 from kivy.app import App
-from kivy.uix.button import Button
-from kivy.uix.boxlayout import BoxLayout
-from kivy.graphics import Rotate
+from kivy.uix.widget import Widget
+from kivy.graphics import Rectangle
+import math
 
+class MyWidget(Widget):
+    def __init__(self, **kwargs):
+        super(MyWidget, self).__init__(**kwargs)
 
-class RotationApp(App):
+        with self.canvas:
+            self.rect = Rectangle(pos=self.pos, size=(100, 100))
+            self.rotate(45)
+        self.angle = 45  # Ângulo de rotação do widget (em graus)
+
+    def on_touch_up(self, touch):
+        dx = 1  # Deslocamento na coordenada X
+        dy = 1  # Deslocamento na coordenada Y
+
+        angle_rad = math.radians(self.angle)  # Converter o ângulo de graus para radianos
+
+        # Aplicar correção na posição com base no ângulo
+        corrected_dx = dx * math.cos(angle_rad) - dy * math.sin(angle_rad)
+        corrected_dy = dx * math.sin(angle_rad) + dy * math.cos(angle_rad)
+
+        self.rect.pos = (self.rect.pos[0] + corrected_dx, self.rect.pos[1] + corrected_dy)  # Atualizar a posição do retângulo
+
+class MyApp(App):
     def build(self):
-        layout = BoxLayout(orientation='vertical')
-
-        # Cria um botão
-        button = Button(text='Exemplo de rotação', size_hint=(None, None), size=(200, 100))
-        layout.add_widget(button)
-
-        # Define o ângulo de rotação do botão
-        button.angle = 0  # Ângulo inicial
-
-        # Cria um objeto Rotate para aplicar a rotação
-        rotation = Rotate(angle=button.angle, origin=button.center)
-
-        # Adiciona o objeto Rotate ao canvas do botão
-        button.canvas.before.add(rotation)
-
-        # Função para girar o botão
-        def rotate_button(dt):
-            button.angle += 1  # Aumenta o ângulo em 1 grau a cada chamada
-            button.angle %= 360  # Mantém o ângulo no intervalo de 0 a 359 graus
-            rotation.angle = button.angle  # Atualiza o ângulo de rotação
-
-        # Adiciona a função de atualização de rotação ao Clock do Kivy
-        from kivy.clock import Clock
-        Clock.schedule_interval(rotate_button, 1 / 60.0)  # Atualiza a rotação a cada 1/60 segundos
-
-        return layout
-
+        return MyWidget()
 
 if __name__ == '__main__':
-    RotationApp().run()
+    MyApp().run()

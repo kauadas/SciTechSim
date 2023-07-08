@@ -71,15 +71,17 @@ class component:
 
     def add_connection(self,component,terminal1: str,terminal2: str):
         self.terminals[terminal1].out[component.name] = [component,terminal2]
+        component.terminals[terminal2].out[self.name] = [self,terminal1]
         
-    def remove_connection(self,component):
+    def remove_connection(self,component,terminal1: str,terminal2: str):
         self.terminals[terminal1].out.pop(component.name)
-        
+        component.terminals[terminal2].out.pop(self.name)
+
     def forward(self):
         for k,v in self.terminals.items():
             for i,t2 in v.out.values():
                 i.get_terminal(t2).set(v=v.v,i=v.i,hz=v.hz)
-                i.upgrade()
+                
                 
                 
 
@@ -121,8 +123,8 @@ class source(component):
         self.Dhz = self.Hz
 
     def upgrade(self):
-        self.get_terminal("+").set(v=self.V,i=self.I,hz=self.hz)
-        self.get_terminal("-").set(v=self.V,i=self.I,hz=self.hz)
+        self.get_terminal("+").set(v=self.V,i=self.I,hz=self.Hz)
+        self.get_terminal("-").set(v=self.V,i=self.I,hz=self.Hz)
 
         self.forward()
 
@@ -139,14 +141,20 @@ class Multimeter(component):
 
         self.i = 0
 
+        self.hz = 0
+
     def upgrade(self):
         T1 = self.get_terminal("+")
-        self.V = T1.v
+        T2 = self.get_terminal("-")
+        self.V = T1.v-T2.v
 
         self.i = T1.i
 
         self.hz = T1.hz
 
+        self.forward()
+
+        T1.set(v=0,i=0,hz=0)
         
 
 class  wire(component):
@@ -161,7 +169,7 @@ class  wire(component):
     def upgrade(self):
         self.upgrade_status()
         t1 = self.get_terminal("+")
-        self.get_terminal('-').set(v=t1.v,i=t1.i,hz=t1.hz)
+        self.get_terminal('-').set(v=t1.v,i=t1.i,hz=t1.Hz)
         
         self.forward()
 

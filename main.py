@@ -271,14 +271,7 @@ class pcbEditor(Screen):
         self.circuit_editor.add_component(self.teste)
         self.teste.size = (100,100)
         self.teste.circuit_pos = (200,200)
-        with self.teste.canvas.before:
-            PushMatrix()
-            rotate = Rotate(angle=45)
 
-        with self.teste.canvas.after:
-            PopMatrix()
-
-        
         with self.canvas.before:
            Color(40/255, 42/255, 54/255,1)
            self.rect0 = Rectangle(size=(50,50),pos=(0,0))

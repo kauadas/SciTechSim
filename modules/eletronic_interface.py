@@ -1,5 +1,6 @@
 from kivy.uix.widget import Widget
 from kivy.uix.image import Image
+from kivy.lang import Builder
 from kivy.uix.stacklayout import StackLayout
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.button import Button
@@ -7,12 +8,16 @@ from kivy.uix.label import Label
 from kivy.uix.popup import Popup
 from kivy.uix.dropdown import DropDown
 from kivy.uix.textinput import TextInput
-from kivy.graphics import Color,Rectangle, Line, Ellipse, Triangle
-
+from kivy.graphics import Color,Rectangle, Line, Ellipse, Triangle, PushMatrix,PopMatrix, Rotate
+from kivy.graphics.transformation import Matrix
+from kivy.clock import Clock
+from kivy.properties import NumericProperty
 from modules import eletronic
+import math
 
 wires = 0
 # classe pai dos componentes qualquer modificação aqui altera todos os componentes tambem.
+
 class Component(Widget):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -24,8 +29,17 @@ class Component(Widget):
         
         self.component = None
         
+        self.angle = 0
 
         self.bind(pos=self.update, size=self.update)
+
+        with self.canvas.before:
+            PushMatrix()
+            self.rot = Rotate(origin=self.center,angle=self.angle)
+        
+        with self.canvas.after:
+            PopMatrix()
+
 
     def on_touch_down(self, touch):
         if self.collide_point(*touch.pos):
@@ -42,8 +56,17 @@ class Component(Widget):
         if touch.grab_current is self:
             touch.ungrab(self)
 
+    def rotate(self,angle):
+        if angle == 360:
+            self.angle = 0
+
+        self.angle = angle
+        self.rot.angle = angle
+
     def update_pos(self):
-        
+        self.rot.origin = self.center
+        self.rot.angle = self.angle
+
         p = self.parent
         
         if self.x < p.x:
@@ -60,8 +83,6 @@ class Component(Widget):
         elif self.y > p.top:
             self.y = p.top-self.height
 
-        for i in self.wires:
-            i.update()
 
 
 # multimetro    
@@ -69,10 +90,17 @@ class Multimeter(Component):
     def __init__(self,name: str = None,**kwargs):
         super().__init__(**kwargs)
 
+        self.angle = 0
+
         name = name or "MM1"
         self.component = eletronic.Multimeter(name=name)
         self.type = "multimeter"
         self.text = Label(text="V: 0 I: 0 Hz: 0",size_hint=(None,None),font_size=10,size=(100,100))
+
+        with self.text.canvas:
+            self.rot2 = Rotate()
+            self.rot2.angle = self.angle
+            self.rot2.origin = self.center
         self.add_widget(self.text)
 
         with self.canvas.before:
@@ -86,6 +114,8 @@ class Multimeter(Component):
 
     def update(self,*args):
         self.update_pos()
+        self.rot2.angle = self.angle
+        self.rot2.origin = self.center
         self.rect1.pos = self.pos
         self.rect1.size = self.size
         self.rect2.pos = (self.pos[0]+self.size[0]*0.1,self.pos[1]+self.size[1]*0.6)
@@ -99,12 +129,20 @@ class Multimeter(Component):
         self.terminal2.pos = (self.pos[0]+self.size[0]*0.8,self.pos[1])
         self.terminal2.size = (self.width*0.1,self.height*0.1)
 
+    def run(self):
+        self.component.upgrade()
+        v = self.component.V
+        i = self.component.i
+        hz = self.component.hz
+        print(v,i,hz)
+        self.text.text = F"V: {v} I: {i} Hz: {hz}"
+
 # objeto resistor
 class Resistor(Component):
     def __init__(self,name: str = None,**kwargs):
         super().__init__(**kwargs)
 
-
+        self.angle = 0
 
         with self.canvas:
             Color(139/255, 103/255, 0,1)
@@ -121,7 +159,6 @@ class Resistor(Component):
         self.type = "resistor"
         self.component = eletronic.Resistor(name=name)
 
-
     def update(self,*args):
         
         self.update_pos()
@@ -132,11 +169,14 @@ class Resistor(Component):
         self.terminal2.size = (self.width*0.5,self.height*0.1)
         self.terminal2.pos = (self.pos[0]+self.terminal2.size[0]*2,self.pos[1]+self.rect1.size[1]*0.4)
  
+    def run(self):
+        self.component.upgrade()
+
 class Source(Component):
     def __init__(self,name: str = None,**kwargs):
         super().__init__(**kwargs)
 
-
+        self.angle = 0
 
         with self.canvas:
             Color(0.7, 0.7, 0,1)
@@ -166,6 +206,10 @@ class Source(Component):
         self.terminal1.pos = (self.pos[0],self.pos[1]+self.rect1.size[1])
         self.terminal2.size = (self.width*0.1,self.height*0.1)
         self.terminal2.pos = (self.pos[0]+self.rect1.size[0]-self.terminal2.size[0],self.pos[1]+self.rect1.size[1])
+
+    def run(self):
+        print(self.component.get_terminal("+").out)
+        self.component.upgrade()
 
 # janela de criação de componentes
 class newComponent(Popup):
@@ -273,6 +317,7 @@ class config_component(Popup):
         self.V = TextInput(hint_text="voltage",multiline=False,size_hint_y=None,height=40)
         self.I = TextInput(hint_text="current",multiline=False,size_hint_y=None,height=40)
         self.Hz = TextInput(hint_text="frequency in hz",multiline=False,size_hint_y=None,height=40)
+        self.status = Label(text=f'is break? {self.component.component.is_break}')
 
 
         self.ok = Button(text="ok",size_hint_y=None,height=40)
@@ -413,18 +458,16 @@ class config_connections(Popup):
         
         self.component.component.add_connection(self.component2.component,self.terminal,self.terminal2)
 
-        t1 = self.component.terminals[self.terminal]
-
-        t2 = self.component2.terminals[self.terminal2]
+        self.dismiss()
 
 # widget editor de circuito
 class CircuitEditor(Widget):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.select = None
-
         self.size_hint = (None,None)
         self.components = {}
+        self.running = None
         self.Button1 = Button(text="add component",size=(100,50),pos=self.pos,
         font_size=10)
         self.Button1.on_press = self.on_btn1
@@ -437,6 +480,16 @@ class CircuitEditor(Widget):
         font_size=10)
         self.Button3.on_press = self.config_component
         self.add_widget(self.Button3)
+
+        self.Button4 = Button(text="run",size=(100,50),pos=self.pos,
+        font_size=10)
+        self.Button4.on_press = self.on_run
+        self.add_widget(self.Button4)
+
+        self.Button5 = Button(text="rotate",size=(100,50),pos=self.pos,
+        font_size=10)
+        self.Button5.on_press = self.rotate_btn
+        self.add_widget(self.Button5)
         
         with self.canvas.before:
             Color(68/255, 71/255, 90/255, 1.0)
@@ -459,6 +512,13 @@ class CircuitEditor(Widget):
         self.Button3.x = self.x-self.Button3.width
         self.Button3.y = self.y+self.height-self.Button3.height-100
 
+        self.Button4.x = self.x-self.Button3.width
+        self.Button4.y = self.y+self.height-self.Button3.height-200
+
+        self.Button5.x = self.x-self.Button3.width
+        self.Button5.y = self.y+self.height-self.Button3.height-150
+        
+
         for i in self.components.values():
             i.x = self.x + i.circuit_pos[0]
             i.y = self.y + i.circuit_pos[1]
@@ -474,16 +534,32 @@ class CircuitEditor(Widget):
 
     def remove_component(self,*args):
         if self.select:
-            for i in self.components.get(self.select).wires:
-                self.remove_widget(i)
-                self.components.pop(i.name)
-
             self.remove_widget(self.components.get(self.select))
             self.components.pop(self.select)
             self.select = None
+
+    def rotate_btn(self,*args):
+        if self.select:
+            print(self.select)
+            cmpt = self.components.get(self.select)
+            cmpt.rotate(cmpt.angle+45)
 
 
             
     def on_btn1(self,*args):
         newComponent(widget=self).open()
+    
+    def run(self,*args):
+        print("ok")
+        for i in self.components.values():
+            i.run()
 
+    def on_run(self,*args):
+        if self.running:
+            self.Button4.text = "run"
+            self.running.cancel()
+            self.running = None
+
+        else:
+            self.Button4.text = "stop"
+            self.running = Clock.schedule_interval(self.run, 0.1)
