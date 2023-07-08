@@ -2,13 +2,6 @@
 import math
 import time
 
-
-#classe que representa a corrente eletrica e descreve seu comportamento
-
-class circuit:
-    #depois escrevo meh
-    pass
-
 #classe que representa um terminal de um componente
 class terminal:
     def __init__(self,polarity: str = "+"):
@@ -128,6 +121,35 @@ class source(component):
 
         self.forward()
 
+
+class Led(component):
+        def __init__(self,**kwargs):
+            super().__init__(**kwargs)
+            
+            self.terminals = {"+": terminal(polarity="+"),
+                            "-": terminal(polarity="-")}
+
+            self.color = kwargs.get("light_color",(255,0,0))+[255]
+
+            self.off_color = kwargs.get("off_color",(255,0,0,126))
+
+            self.volts = kwargs.get("max_voltage",5)
+
+            self.porcent = (255-self.off_color[-1])/5
+
+            self.light_level = 0
+
+
+        def upgrade(self):
+            Tp = self.get_terminal("+")
+            Tn = self.get_terminal("-")
+            if Tp.v > 0:
+                Tn.set(v=Tp.v,i=Tp.i,hz=Tp.hz)
+
+                self.light_level = self.porcent*Tp.v
+            
+
+            self.forward()
 
 
 class Multimeter(component):

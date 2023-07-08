@@ -92,7 +92,7 @@ class Multimeter(Component):
 
         self.angle = 0
 
-        name = name or "MM1"
+        name = name
         self.component = eletronic.Multimeter(name=name)
         self.type = "multimeter"
         self.text = Label(text="V: 0 I: 0 Hz: 0",size_hint=(None,None),font_size=10,size=(100,100))
@@ -155,7 +155,7 @@ class Resistor(Component):
             "1": self.terminal1,
             "2": self.terminal2
         }
-        name = name or "R1"
+        name = name
         self.type = "resistor"
         self.component = eletronic.Resistor(name=name)
 
@@ -192,7 +192,7 @@ class Source(Component):
             "+": self.terminal2
         }
 
-        name = name or "Source"
+        name = name
         self.type = "source"
         self.component = eletronic.source(name=name)
 
@@ -210,6 +210,36 @@ class Source(Component):
     def run(self):
         print(self.component.get_terminal("+").out)
         self.component.upgrade()
+
+#led
+
+class led(Component):
+    def __init__(self,name: str = "led",**kwargs):
+
+        self.terminals = {
+            "-": self.terminal1,
+            "+": self.terminal2
+        }
+
+        with self.canvas:
+            Color(0.7, 0.7, 0,1)
+            self.rect1=Rectangle(pos=self.circuit_pos,size=(self.width*0.4,self.height))
+            Color(0.5,0.5,0.5,1)
+            self.terminal1 = Rectangle(pos=self.circuit_pos,size=(self.width*0.1,self.height*0.1))
+            self.terminal2 = Rectangle(pos=self.circuit_pos,size=(self.width*0.1,self.height*0.1))
+            Color(0,0,0,1)
+
+
+    def update(self,*args):
+        
+        self.update_pos()
+        self.rect1.pos = self.pos
+        self.rect1.size = (self.width,self.height*0.6)
+        self.terminal1.size = (self.width*0.1,self.height*0.1)
+        self.terminal1.pos = (self.pos[0],self.pos[1]+self.rect1.size[1])
+        self.terminal2.size = (self.width*0.1,self.height*0.1)
+        self.terminal2.pos = (self.pos[0]+self.rect1.size[0]-self.terminal2.size[0],self.pos[1]+self.rect1.size[1])
+
 
 # janela de criação de componentes
 class newComponent(Popup):
