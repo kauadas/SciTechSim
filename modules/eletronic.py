@@ -75,7 +75,10 @@ class component:
             for i,t2 in v.out.values():
                 i.get_terminal(t2).set(v=v.v,i=v.i,hz=v.hz)
                 
-                
+    def reset(self):
+        for i in self.terminals.values():
+            i.set(v=0,i=0,hz=0)
+        
                 
 
     def get_terminal(self,terminal: str):
@@ -129,27 +132,44 @@ class Led(component):
             self.terminals = {"+": terminal(polarity="+"),
                             "-": terminal(polarity="-")}
 
-            self.color = kwargs.get("light_color",(255,0,0))+[255]
+            self.color = kwargs.get("light_color",[255,0,0])+[255]
 
-            self.off_color = kwargs.get("off_color",(255,0,0,126))
+            self.off_color = [i/2 for i in self.color]
 
-            self.volts = kwargs.get("max_voltage",5)
+            self.volts = kwargs.get("voltage",5)
 
-            self.porcent = (255-self.off_color[-1])/5
+            self.current = kwargs.get("current",0.02)
+            
+            self.watts = self.volts*self.current
 
-            self.light_level = 0
+            self.porcent = [i/self.volts for i in self.color]
+            self.zero = 116/255
+            self.light_color = [self.zero,0,0,self.zero]
 
 
         def upgrade(self):
             Tp = self.get_terminal("+")
             Tn = self.get_terminal("-")
-            if Tp.v > 0:
-                Tn.set(v=Tp.v,i=Tp.i,hz=Tp.hz)
 
-                self.light_level = self.porcent*Tp.v
+            W = (Tp.v*Tp.i)
             
+            if W <= self.watts:
+                if Tp.v > 0:
+                    Tn.set(v=Tp.v,i=Tp.i,hz=Tp.hz)
 
-            self.forward()
+                if Tp.v > 0:
+                    self.light_color = [i*Tp.v for i in self.porcent]
+
+                else:
+                    self.light_color = self.off_color
+
+                    
+                
+
+                self.forward()
+
+            else:
+                self.is_break = True
 
 
 class Multimeter(component):

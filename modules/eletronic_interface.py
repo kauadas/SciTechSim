@@ -107,10 +107,10 @@ class Multimeter(Component):
             Color(248/255, 255/255, 0,1)
             self.rect1 = Rectangle(pos=self.pos,size=self.size)
             Color(0.5, 0.5, 0.5,1)
-            self.rect2 = Rectangle(pos=(self.pos[0],self.pos[1]*0.6),size=(self.size[0]*0.8,self.size[1]*0.2))
+            self.rect2 = Rectangle(pos=(self.x,self.y*0.6),size=(self.size[0]*0.8,self.size[1]*0.2))
             Color(0,0,0,1)
-            self.terminal1 = Rectangle(pos=(self.pos[0]*0.1,self.pos[1]),size=(self.width*0.1,self.height*0.1))
-            self.terminal2 = Rectangle(pos=(self.pos[0]*0.9,self.pos[1]),size=(self.width*0.1,self.height*0.1))
+            self.terminal1 = Rectangle(pos=(self.x*0.1,self.y),size=(self.width*0.1,self.height*0.1))
+            self.terminal2 = Rectangle(pos=(self.x*0.9,self.y),size=(self.width*0.1,self.height*0.1))
 
     def update(self,*args):
         self.update_pos()
@@ -118,15 +118,15 @@ class Multimeter(Component):
         self.rot2.origin = self.center
         self.rect1.pos = self.pos
         self.rect1.size = self.size
-        self.rect2.pos = (self.pos[0]+self.size[0]*0.1,self.pos[1]+self.size[1]*0.6)
+        self.rect2.pos = (self.x+self.size[0]*0.1,self.y+self.size[1]*0.6)
         self.rect2.size = (self.size[0]*0.8,self.size[1]*0.2)
         self.text.pos = self.rect2.pos
         self.text.size = self.rect2.size
         self.font_size = self.rect2.size[0]/10
         self.text.font_size = self.rect2.size[0]*0.1
-        self.terminal1.pos = (self.pos[0]+self.size[0]*0.1,self.pos[1])
+        self.terminal1.pos = (self.x+self.size[0]*0.1,self.y)
         self.terminal1.size = (self.width*0.1,self.height*0.1)
-        self.terminal2.pos = (self.pos[0]+self.size[0]*0.8,self.pos[1])
+        self.terminal2.pos = (self.x+self.size[0]*0.8,self.y)
         self.terminal2.size = (self.width*0.1,self.height*0.1)
 
     def run(self):
@@ -165,9 +165,9 @@ class Resistor(Component):
         self.rect1.pos = self.pos
         self.rect1.size = (self.width,self.height*0.5)
         self.terminal1.size = (self.width*0.5,self.height*0.1)
-        self.terminal1.pos = (self.pos[0]-self.terminal1.size[0],self.pos[1]+self.rect1.size[1]*0.4)
+        self.terminal1.pos = (self.x-self.terminal1.size[0],self.y+self.rect1.size[1]*0.4)
         self.terminal2.size = (self.width*0.5,self.height*0.1)
-        self.terminal2.pos = (self.pos[0]+self.terminal2.size[0]*2,self.pos[1]+self.rect1.size[1]*0.4)
+        self.terminal2.pos = (self.x+self.terminal2.size[0]*2,self.y+self.rect1.size[1]*0.4)
  
     def run(self):
         self.component.upgrade()
@@ -203,9 +203,9 @@ class Source(Component):
         self.rect1.pos = self.pos
         self.rect1.size = (self.width,self.height*0.6)
         self.terminal1.size = (self.width*0.1,self.height*0.1)
-        self.terminal1.pos = (self.pos[0],self.pos[1]+self.rect1.size[1])
+        self.terminal1.pos = (self.x,self.y+self.rect1.size[1])
         self.terminal2.size = (self.width*0.1,self.height*0.1)
-        self.terminal2.pos = (self.pos[0]+self.rect1.size[0]-self.terminal2.size[0],self.pos[1]+self.rect1.size[1])
+        self.terminal2.pos = (self.x+self.rect1.size[0]-self.terminal2.size[0],self.y+self.rect1.size[1])
 
     def run(self):
         print(self.component.get_terminal("+").out)
@@ -215,30 +215,51 @@ class Source(Component):
 
 class led(Component):
     def __init__(self,name: str = "led",**kwargs):
+        super().__init__(**kwargs)
+
+        self.component = eletronic.Led(name=name)
+        self.type = "led"
+
+        with self.canvas:
+            self.color1 = Color(*[i/255 for i in self.component.off_color])
+            self.circle1 = Ellipse(angle_start=-90,angle_end=90)
+            self.rect1 = Rectangle(pos=self.circuit_pos,size=(self.width*0.4,self.height))
+            self.rect2 = Rectangle(pos=self.circuit_pos,size=(self.width*0.6,self.height))
+            Color(0.5,0.5,0.5,1)
+            self.terminal1 = Rectangle(pos=self.circuit_pos,size=(self.width*0.1,self.height*0.1))
+            self.terminal2 = Rectangle(pos=self.circuit_pos,size=(self.width*0.1,self.height*0.1))
+            Color(0,0,0,1)
 
         self.terminals = {
             "-": self.terminal1,
             "+": self.terminal2
         }
 
-        with self.canvas:
-            Color(0.7, 0.7, 0,1)
-            self.rect1=Rectangle(pos=self.circuit_pos,size=(self.width*0.4,self.height))
-            Color(0.5,0.5,0.5,1)
-            self.terminal1 = Rectangle(pos=self.circuit_pos,size=(self.width*0.1,self.height*0.1))
-            self.terminal2 = Rectangle(pos=self.circuit_pos,size=(self.width*0.1,self.height*0.1))
-            Color(0,0,0,1)
 
+    def run(self):
+        self.component.upgrade()
+        self.color1.rgba = [i/255 for i in self.component.light_color]
+        
 
     def update(self,*args):
         
         self.update_pos()
-        self.rect1.pos = self.pos
-        self.rect1.size = (self.width,self.height*0.6)
-        self.terminal1.size = (self.width*0.1,self.height*0.1)
-        self.terminal1.pos = (self.pos[0],self.pos[1]+self.rect1.size[1])
-        self.terminal2.size = (self.width*0.1,self.height*0.1)
-        self.terminal2.pos = (self.pos[0]+self.rect1.size[0]-self.terminal2.size[0],self.pos[1]+self.rect1.size[1])
+
+        self.rect2.size = (self.width,self.height*0.1)
+        self.rect2.pos = (self.x-self.rect2.size[0]*0.1,self.y)
+
+        self.rect1.size = (self.width*0.8,self.height*0.7)
+        self.rect1.pos = (self.x,self.y+self.rect2.size[1])
+        
+        
+
+        self.circle1.size = self.rect1.size
+        self.circle1.pos = (self.x,self.rect1.pos[1]+self.rect1.size[1]-self.circle1.size[1]/2)
+
+        self.terminal1.size = (self.width*0.1,self.height*0.2)
+        self.terminal1.pos = (self.x+self.rect1.size[0]*0.1,self.y-self.terminal2.size[1])
+        self.terminal2.size = (self.width*0.1,self.height*0.2)
+        self.terminal2.pos = (self.x+self.rect1.size[0]*0.9-self.terminal2.size[0],self.y-self.terminal2.size[1])
 
 
 # janela de criação de componentes
@@ -590,6 +611,14 @@ class CircuitEditor(Widget):
             self.running.cancel()
             self.running = None
 
+            for i in self.components.values():
+                i.component.reset()
+                i.run()
+
+            
+
         else:
             self.Button4.text = "stop"
+            
+
             self.running = Clock.schedule_interval(self.run, 0.1)

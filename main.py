@@ -13,7 +13,7 @@ from kivy.uix.stacklayout import StackLayout
 from kivy.uix.layout import Layout
 from kivy.graphics import Color, Rectangle, Line, PushMatrix, PopMatrix, Rotate
 
-from modules.eletronic_interface import Resistor,CircuitEditor, Multimeter, Source
+from modules.eletronic_interface import Resistor,CircuitEditor, Multimeter, Source, led
 
 from modules import project_file
 from pathlib import Path
@@ -267,9 +267,9 @@ class pcbEditor(Screen):
         
         self.pos = (0,0) 
 
-        self.teste = Source("f1")
+        self.teste = led("f1")
         self.circuit_editor.add_component(self.teste)
-        self.teste.size = (100,100)
+        self.teste.size = (50,50)
         self.teste.circuit_pos = (200,200)
 
         with self.canvas.before:
