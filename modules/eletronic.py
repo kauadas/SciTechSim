@@ -8,9 +8,9 @@ class terminal:
         if polarity not in ["+","-"]:
             raise ValueError("Invalid polarity. Valid polarities are '+' and '-'.")
 
-        self.v = 0
-        self.i = 0
-        self.hz = 0
+        self.v = None
+        self.i = None
+        self.hz = None
         self.out = {}
         if polarity == "+":
             self.polarity = 1
