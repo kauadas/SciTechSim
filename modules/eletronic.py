@@ -23,8 +23,15 @@ class terminal:
 
     def set(self,**kwargs):
         
-        self.v = kwargs.get('v',self.v)*self.polarity
-        self.i = kwargs.get('i',self.i)*self.polarity
+        self.v = kwargs.get('v',self.v)
+        if self.v:
+            self.v *= self.polarity
+
+        self.i = kwargs.get('i',self.i)
+
+        if self.i:
+            self.i *= self.polarity
+
         self.hz = kwargs.get("hz",self.hz)
 
     def clear(self):
@@ -81,12 +88,13 @@ class component:
         
                 
 
-    def get_terminal(self,terminal: str):
-        if terminal in self.terminals:
-            return self.terminals.get(terminal)
+    def get_terminal(self,terminal_: str):
+        if terminal_ in self.terminals:
+            return self.terminals.get(terminal_)
 
         else:
-            return None
+            Exception("terminal don't found.")
+            
 
     def upgrade_status(self):
         for i in self.terminals.values():
