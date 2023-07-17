@@ -11,6 +11,7 @@ class terminal:
         self.v = None
         self.i = None
         self.hz = None
+
         self.out = {}
         if polarity == "+":
             self.polarity = 1
@@ -22,7 +23,7 @@ class terminal:
             
 
     def set(self,**kwargs):
-        
+
         self.v = kwargs.get('v',self.v)
         if self.v:
             self.v *= self.polarity
@@ -35,9 +36,11 @@ class terminal:
         self.hz = kwargs.get("hz",self.hz)
 
     def clear(self):
-        self.v = 0
-        self.i = 0
-        self.hz = 0
+        self.v = None
+        self.i = None
+        self.hz = None
+
+        
 
 # classe pai de todos os componentes
 class component:
@@ -93,7 +96,7 @@ class component:
             return self.terminals.get(terminal_)
 
         else:
-            Exception("terminal don't found.")
+            raise KeyError(f"terminal {terminal_} don't found.")
             
 
     def upgrade_status(self):
@@ -152,32 +155,39 @@ class Led(component):
 
             self.porcent = [i/self.volts for i in self.color]
             self.zero = 116/255
-            self.light_color = [self.zero,0,0,self.zero]
+            self.light_color = self.off_color
 
 
         def upgrade(self):
             Tp = self.get_terminal("+")
             Tn = self.get_terminal("-")
 
-            W = (Tp.v*Tp.i)
-            
-            if W <= self.watts:
-                if Tp.v > 0:
-                    Tn.set(v=Tp.v,i=Tp.i,hz=Tp.hz)
+            if Tp.i:
 
-                if Tp.v > 0:
-                    self.light_color = [i*Tp.v for i in self.porcent]
+                W = (Tp.v*Tp.i)
+                
+                if W <= self.watts:
+                    if Tp.v > 0:
+                        Tn.set(v=Tp.v,i=Tp.i,hz=Tp.hz)
+
+                    if Tp.v > 0:
+                        self.light_color = [i*Tp.v for i in self.porcent]
+
+                    else:
+                        self.light_color = self.off_color
+
+                    self.forward()
 
                 else:
-                    self.light_color = self.off_color
-
-                    
-                
-
-                self.forward()
+                    self.is_break = True
 
             else:
-                self.is_break = True
+                self.light_color = self.off_color
+                
+
+                
+
+            
 
 
 class Multimeter(component):
@@ -196,6 +206,7 @@ class Multimeter(component):
     def upgrade(self):
         T1 = self.get_terminal("+")
         T2 = self.get_terminal("-")
+
         self.V = T1.v-T2.v
 
         self.i = T1.i
@@ -249,5 +260,3 @@ class Resistor(component):
                 print(I)
 
             self.forward()
-
-
