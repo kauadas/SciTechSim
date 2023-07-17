@@ -24,21 +24,17 @@ class terminal:
 
     def set(self,**kwargs):
 
-        self.v = kwargs.get('v',self.v)
-        if self.v:
-            self.v *= self.polarity
+        self.v = kwargs.get('v',self.v)*self.polarity
 
-        self.i = kwargs.get('i',self.i)
+        self.i = kwargs.get('i',self.i)*self.polarity
 
-        if self.i:
-            self.i *= self.polarity
 
         self.hz = kwargs.get("hz",self.hz)
 
     def clear(self):
-        self.v = None
-        self.i = None
-        self.hz = None
+        self.v = 0
+        self.i = 0
+        self.hz = 0
 
         
 
@@ -122,6 +118,8 @@ class source(component):
         self.terminals = {"+": terminal(polarity="+"),
                           "-": terminal(polarity="-")}
 
+        self.type = "source"
+
         self.V = kwargs.get('voltage',12)
         self.Dv = self.V
         self.I = kwargs.get('amparage',2)
@@ -143,6 +141,8 @@ class Led(component):
             self.terminals = {"+": terminal(polarity="+"),
                             "-": terminal(polarity="-")}
 
+            self.type = "led"
+
             self.color = kwargs.get("light_color",[255,0,0])+[255]
 
             self.off_color = [i/2 for i in self.color]
@@ -162,27 +162,24 @@ class Led(component):
             Tp = self.get_terminal("+")
             Tn = self.get_terminal("-")
 
-            if Tp.i:
 
-                W = (Tp.v*Tp.i)
-                
-                if W <= self.watts:
-                    if Tp.v > 0:
-                        Tn.set(v=Tp.v,i=Tp.i,hz=Tp.hz)
+            W = (Tp.v*Tp.i)
+            
+            if W <= self.watts:
+                if Tp.v > 0:
+                    Tn.set(v=Tp.v,i=Tp.i,hz=Tp.hz)
 
-                    if Tp.v > 0:
-                        self.light_color = [i*Tp.v for i in self.porcent]
-
-                    else:
-                        self.light_color = self.off_color
-
-                    self.forward()
+                if Tp.v > 0:
+                    self.light_color = [i*Tp.v for i in self.porcent]
 
                 else:
-                    self.is_break = True
+                    self.light_color = self.off_color
+
+                self.forward()
 
             else:
-                self.light_color = self.off_color
+                self.is_break = True
+
                 
 
                 
@@ -196,6 +193,8 @@ class Multimeter(component):
         
         self.terminals = {"+": terminal(polarity="+"),
                           "-": terminal(polarity="-")}
+
+        self.type = "multimeter"
 
         self.V = 0
 
@@ -238,6 +237,8 @@ class Resistor(component):
     def __init__(self,**kwargs):
         super().__init__(**kwargs)
 
+        self.type = "resistor"
+        
         self.r = kwargs.get("r",10)
         self.terminals = {"1": terminal(polarity="+"),
                           "2": terminal(polarity="+")}

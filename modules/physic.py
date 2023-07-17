@@ -1,6 +1,7 @@
 import math
 import time
 
+pi = math.pi
 G = 6.674*(10**-11)
 K = 9*(10**9)
 H = 6.62607015*(10**-36)
@@ -80,10 +81,12 @@ class wave:
         self.T = kwargs.get("T")
         self.A = kwargs.get("A",2)
         self.E = H*C/self.A
-        self.P = self.a * self.T/2
+        self.P = kwargs,get("P")
+        self.I = self.P / 4*pi
         self.origin = kwargs.get("origin",[0,0,0])
         self.V = kwargs.get("V",C)
         self.R = 0
 
     def upgrade(self):
             self.R += self.V
+            self.I = self.P / 4*pi*self.R**2

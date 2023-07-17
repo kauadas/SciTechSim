@@ -13,7 +13,7 @@ from kivy.uix.stacklayout import StackLayout
 from kivy.uix.layout import Layout
 from kivy.graphics import Color, Rectangle, Line, PushMatrix, PopMatrix, Rotate
 
-from modules.eletronic_interface import Resistor,CircuitEditor, Multimeter, Source, led
+from modules.eletronic_interface import CircuitEditor
 
 from modules import project_file
 from pathlib import Path
@@ -32,6 +32,7 @@ class screenManager0(ScreenManager):
 
         self.add_widget(home())
         self.add_widget(pcbEditor())
+        self.add_widget(mainScreen())
 
 
 
@@ -191,6 +192,11 @@ class action_bar(BoxLayout):
         self.pcb = Button(text="Pcb Editor",size_hint=(None,1),width=70,
                            background_color=(0,0,0,0))
         self.pcb.on_press = lambda *args: self.trocar_tela("pcbeditor")
+
+        self.main = Button(text="Main",size_hint=(None,1),width=50,
+                           background_color=(0,0,0,0))
+        self.main.on_press = lambda *args: self.trocar_tela("main")
+        
         
         self.project.on_press = self.project_pop_up
         
@@ -198,6 +204,7 @@ class action_bar(BoxLayout):
         
         self.add_widget(self.project)
         self.add_widget(self.home)
+        self.add_widget(self.main)
         self.add_widget(self.pcb)
 
         with self.canvas.before:
@@ -249,6 +256,7 @@ class home(Screen):
         self.actionbar.pos = (0,size[1]-20)
         
 
+
 class pcbEditor(Screen):
     def __init__(self,**kwargs):
         super().__init__(**kwargs)
@@ -267,10 +275,6 @@ class pcbEditor(Screen):
         
         self.pos = (0,0) 
 
-        self.teste = led("f1")
-        self.circuit_editor.add_component(self.teste)
-        self.teste.size = (50,50)
-        self.teste.circuit_pos = (200,200)
 
         with self.canvas.before:
            Color(40/255, 42/255, 54/255,1)
@@ -294,11 +298,11 @@ class pcbEditor(Screen):
 
         
 
-class GeneralEditor(Screen):
+class mainScreen(Screen):
     def __init__(self,**kwargs):
         super().__init__(**kwargs)
 
-        self.name = "editor"
+        self.name = "main"
 
         self.actionbar = action_bar()
         

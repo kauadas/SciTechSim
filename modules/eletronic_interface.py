@@ -208,12 +208,12 @@ class Source(Component):
         self.terminal2.pos = (self.x+self.rect1.size[0]-self.terminal2.size[0],self.y+self.rect1.size[1])
 
     def run(self):
-        print(self.component.get_terminal("+").out)
+        print(self.component.get_terminal("+").out,self.component.get_terminal("-").out)
         self.component.upgrade()
 
 #led
 
-class led(Component):
+class Led(Component):
     def __init__(self,name: str = "led",**kwargs):
         super().__init__(**kwargs)
 
@@ -284,7 +284,7 @@ class newComponent(Popup):
         self.select_type.on_press = lambda *args: self.layout.add_widget(self.options)
 
 
-        components = ["resistor","multimeter","source"]
+        components = ["resistor","multimeter","source","led"]
 
         opts = []
         for i in components:
@@ -306,17 +306,7 @@ class newComponent(Popup):
     
     def select(self,_type: str):
         self.select_type.text = "type: " + _type
-        if _type == "resistor" and self.comp_type != "resistor":
-            
-            self.comp_type = _type
-
-        elif _type == "multimeter" and self.comp_type != "multimeter":
-            
-            self.comp_type = _type
-
-        elif _type == "source" and self.comp_type != "source":
-            
-            self.comp_type = _type
+        self.comp_type = _type
 
 
         
@@ -351,6 +341,16 @@ class newComponent(Popup):
             source.circuit_pos = (0,0)
             size = float(self.Size.text)
             source.size = (size,size)
+
+
+        elif self.comp_type == "led":
+            led = Led(self.name.text)
+
+            self.widget.add_component(led)
+            led.pos = self.widget.pos
+            led.circuit_pos = (0,0)
+            size = float(self.Size.text)
+            led.size = (size,size)
 
             
             
@@ -517,7 +517,9 @@ class CircuitEditor(Widget):
         super().__init__(**kwargs)
         self.select = None
         self.size_hint = (None,None)
+        self.pcbs = {}
         self.components = {}
+        self.pcbs["0"] = get_pcb_json(self.components)
         self.running = None
         self.Button1 = Button(text="add component",size=(100,50),pos=self.pos,
         font_size=10)
@@ -622,3 +624,36 @@ class CircuitEditor(Widget):
             
 
             self.running = Clock.schedule_interval(self.run, 0.1)
+
+
+def get_pcb_json(pcb: dict):
+    components = {}
+    for name,component in components.items():
+        
+
+        if component.component.type == "resistor":
+            components[name] = {
+                "R": component.component.r
+            }
+
+        elif component.component.type == "source":
+            components[name] = {
+                "V": component.component.V,
+                "I": component.component.I
+            }
+
+        elif component.component.type == "led":
+            components[name] = {
+                "R": component.component.r,
+                "color": component.component.light_color,
+                "off_color": component.component.off_color,
+                "volts": component.component.volts,
+                "current": component.component.current
+            }
+
+
+        components[name]['pos'] = component.circuit_pos
+        components[name]['size'] = component.width
+
+
+    return components
