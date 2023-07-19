@@ -1,6 +1,14 @@
 
 import math
 import time
+ 
+class current:
+    def __init__(self,source):
+        self.source = fonte
+        self.map = [[self.source]]
+
+    def run(self):
+        self.source.upgrade()
 
 #classe que representa um terminal de um componente
 class terminal:
@@ -8,9 +16,9 @@ class terminal:
         if polarity not in ["+","-"]:
             raise ValueError("Invalid polarity. Valid polarities are '+' and '-'.")
 
-        self.v = None
-        self.i = None
-        self.hz = None
+        self.v = 0
+        self.i = 0
+        self.hz = 0
 
         self.out = {}
         if polarity == "+":
@@ -27,7 +35,6 @@ class terminal:
         self.v = kwargs.get('v',self.v)*self.polarity
 
         self.i = kwargs.get('i',self.i)*self.polarity
-
 
         self.hz = kwargs.get("hz",self.hz)
 
@@ -48,8 +55,12 @@ class component:
 
         self.r = kwargs.get("r",172/10000)
 
+        self.is_source = False
+
         self.time = 1
         
+        self.callback = None
+
         self.Dc = kwargs.get("specific_temp",20.92)/4.184
 
         self.ambient_temp = kwargs.get("ambient_temp",20)
@@ -59,6 +70,8 @@ class component:
         self.max_temp = kwargs.get('max_temp',200)
 
         self.is_break = False
+
+        self.callback = None
 
     def get_status(self):
             return {
@@ -77,14 +90,24 @@ class component:
         component.terminals[terminal2].out.pop(self.name)
 
     def forward(self):
+        if self.callback:
+            self.callback()
+
         for k,v in self.terminals.items():
             for i,t2 in v.out.values():
-                i.get_terminal(t2).set(v=v.v,i=v.i,hz=v.hz)
+                t = i.get_terminal(t2)
+                t_ = [t.v,t.i,t.hz]
+                t.set(v=v.v,i=v.i,hz=v.hz)
+
+                if t_ != [t.v,t.i,t.hz]:
+                    i.upgrade()
+                
                 
     def reset(self):
         for i in self.terminals.values():
             i.set(v=0,i=0,hz=0)
         
+        self.is_break = False
                 
 
     def get_terminal(self,terminal_: str):
@@ -119,6 +142,7 @@ class source(component):
                           "-": terminal(polarity="-")}
 
         self.type = "source"
+        self.is_source = True
 
         self.V = kwargs.get('voltage',12)
         self.Dv = self.V
@@ -194,6 +218,8 @@ class Multimeter(component):
         self.terminals = {"+": terminal(polarity="+"),
                           "-": terminal(polarity="-")}
 
+        
+
         self.type = "multimeter"
 
         self.V = 0
@@ -202,15 +228,24 @@ class Multimeter(component):
 
         self.hz = 0
 
+        self.R = 0
+
     def upgrade(self):
         T1 = self.get_terminal("+")
         T2 = self.get_terminal("-")
+        
 
         self.V = T1.v-T2.v
 
         self.i = T1.i
 
         self.hz = T1.hz
+
+        if self.i > 0:
+            self.R = self.V/self.i
+
+        else:
+            self.R = 0
 
         self.forward()
 
@@ -261,3 +296,4 @@ class Resistor(component):
                 print(I)
 
             self.forward()
+

@@ -94,6 +94,7 @@ class Multimeter(Component):
 
         name = name
         self.component = eletronic.Multimeter(name=name)
+        self.component.callback = self.run
         self.type = "multimeter"
         self.text = Label(text="V: 0 I: 0 Hz: 0",size_hint=(None,None),font_size=10,size=(100,100))
 
@@ -130,7 +131,7 @@ class Multimeter(Component):
         self.terminal2.size = (self.width*0.1,self.height*0.1)
 
     def run(self):
-        self.component.upgrade()
+        
         v = self.component.V
         i = self.component.i
         hz = self.component.hz
@@ -169,8 +170,7 @@ class Resistor(Component):
         self.terminal2.size = (self.width*0.5,self.height*0.1)
         self.terminal2.pos = (self.x+self.terminal2.size[0]*2,self.y+self.rect1.size[1]*0.4)
  
-    def run(self):
-        self.component.upgrade()
+
 
 class Source(Component):
     def __init__(self,name: str = None,**kwargs):
@@ -207,9 +207,7 @@ class Source(Component):
         self.terminal2.size = (self.width*0.1,self.height*0.1)
         self.terminal2.pos = (self.x+self.rect1.size[0]-self.terminal2.size[0],self.y+self.rect1.size[1])
 
-    def run(self):
-        print(self.component.get_terminal("+").out,self.component.get_terminal("-").out)
-        self.component.upgrade()
+  
 
 #led
 
@@ -218,6 +216,7 @@ class Led(Component):
         super().__init__(**kwargs)
 
         self.component = eletronic.Led(name=name)
+        self.component.callback = self.run
         self.type = "led"
 
         with self.canvas:
@@ -237,7 +236,7 @@ class Led(Component):
 
 
     def run(self):
-        self.component.upgrade()
+        
         self.color1.rgba = [i/255 for i in self.component.light_color]
         
 
@@ -605,7 +604,8 @@ class CircuitEditor(Widget):
     def run(self,*args):
         print("ok")
         for i in self.components.values():
-            i.run()
+            if i.component.is_source:
+                i.component.upgrade()
 
     def on_run(self,*args):
         if self.running:
@@ -615,7 +615,7 @@ class CircuitEditor(Widget):
 
             for i in self.components.values():
                 i.component.reset()
-                i.run()
+                i.component.upgrade()
 
             
 
