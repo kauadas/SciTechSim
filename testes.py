@@ -1,7 +1,7 @@
 from modules import chemical
 
 
-mol = chemical.molecule("O","-","C","-","O")
+mol = chemical.molecule("H","-","O","-","O","-","H")
 
-print(mol.get_formule())
+print(mol.formule)
 print(mol.Nox)
