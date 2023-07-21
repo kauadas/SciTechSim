@@ -1,7 +1,6 @@
 
 import math
 import time
- 
 
 #classe que representa um terminal de um componente
 class terminal:
@@ -93,18 +92,16 @@ class component:
         
 
         for k,v in self.terminals.items():
-            for i,t2 in v.out.values():
-                t = i.get_terminal(t2)
-                t_ = [t.in_v,t.in_I,t.hz]
-                t.set(in_v=v.out_v,in_I=v.out_I,hz=v.hz)
-                t2 = [t.in_v,t.in_I,t.hz]
+            if v.polarity == -1:
+                for i,t2 in v.out.values():
+                    t = i.get_terminal(t2)
+                    t_ = [t.in_v,t.in_I,t.hz]
+                    t.set(in_v=v.out_v,in_I=v.out_I,hz=v.hz)
+                    t2 = [t.in_v,t.in_I,t.hz]
 
-                for f,f2 in zip(t_,t2):
-                    
-                    if f != f2:
-                        print(i.name)
-                        i.upgrade()
-                        break
+                    print(i.name)
+                    i.upgrade()
+                        
 
 
         if self.callback:
