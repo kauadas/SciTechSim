@@ -3,6 +3,7 @@ import math
 import time
 
 #classe que representa um terminal de um componente
+
 class terminal:
     def __init__(self,polarity: str = "+"):
         if polarity not in ["+","-"]:
@@ -92,7 +93,6 @@ class component:
         
 
         for k,v in self.terminals.items():
-            if v.polarity == -1:
                 for i,t2 in v.out.values():
                     t = i.get_terminal(t2)
                     t_ = [t.in_v,t.in_I,t.hz]
@@ -100,7 +100,7 @@ class component:
                     t2 = [t.in_v,t.in_I,t.hz]
 
                     print(i.name)
-                    i.upgrade()
+
                         
 
 
@@ -242,9 +242,9 @@ class Multimeter(component):
 
         self.V = T1.in_v - T2.in_v
 
-        self.i = T1.in_I
+        self.i = T1.in_I - T2.in_I
 
-        self.hz = T1.hz
+        self.hz = T1.hz - T2.hz
 
         if self.i > 0:
             self.R = self.V/self.i

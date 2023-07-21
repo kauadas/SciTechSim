@@ -637,8 +637,7 @@ class CircuitEditor(Widget):
     def run(self,*args):
         
         for i in self.components.values():
-            if i.component.is_source:
-                i.component.upgrade()
+            i.component.upgrade()
 
     def on_run(self,*args):
         if self.running:
