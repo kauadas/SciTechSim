@@ -2,13 +2,6 @@
 import math
 import time
  
-class current:
-    def __init__(self,source):
-        self.source = fonte
-        self.map = [[self.source]]
-
-    def run(self):
-        self.source.upgrade()
 
 #classe que representa um terminal de um componente
 class terminal:
@@ -16,8 +9,10 @@ class terminal:
         if polarity not in ["+","-"]:
             raise ValueError("Invalid polarity. Valid polarities are '+' and '-'.")
 
-        self.v = 0
-        self.i = 0
+        self.out_v = 0
+        self.in_v = 0
+        self.in_I = 0
+        self.out_I = 0
         self.hz = 0
 
         self.out = {}
@@ -32,9 +27,14 @@ class terminal:
 
     def set(self,**kwargs):
 
-        self.v = kwargs.get('v',self.v)*self.polarity
+        self.in_v = kwargs.get('in_v',self.in_v)*self.polarity
 
-        self.i = kwargs.get('i',self.i)*self.polarity
+        self.in_I = kwargs.get('in_I',self.in_I)*self.polarity
+
+        self.out_v = kwargs.get('out_v',self.out_v)*self.polarity
+
+        self.out_I = kwargs.get('out_I',self.out_I)*self.polarity
+
 
         self.hz = kwargs.get("hz",self.hz)
 
@@ -61,7 +61,7 @@ class component:
         
         self.callback = None
 
-        self.Dc = kwargs.get("specific_temp",20.92)/4.184
+        self.Dc = kwargs.get("specific_temp",1)*4.186
 
         self.ambient_temp = kwargs.get("ambient_temp",20)
 
@@ -90,17 +90,25 @@ class component:
         component.terminals[terminal2].out.pop(self.name)
 
     def forward(self):
-        if self.callback:
-            self.callback()
+        
 
         for k,v in self.terminals.items():
             for i,t2 in v.out.values():
                 t = i.get_terminal(t2)
-                t_ = [t.v,t.i,t.hz]
-                t.set(v=v.v,i=v.i,hz=v.hz)
+                t_ = [t.in_v,t.in_I,t.hz]
+                t.set(in_v=v.out_v,in_I=v.out_I,hz=v.hz)
+                t2 = [t.in_v,t.in_I,t.hz]
 
-                if t_ != [t.v,t.i,t.hz]:
-                    i.upgrade()
+                for f,f2 in zip(t_,t2):
+                    
+                    if f != f2:
+                        print(i.name)
+                        i.upgrade()
+                        break
+
+
+        if self.callback:
+            self.callback()
                 
                 
     def reset(self):
@@ -120,8 +128,8 @@ class component:
 
     def upgrade_status(self):
         for i in self.terminals.values():
-            if i.i > 0:
-                Q = (i.i**2)*self.r*self.time
+            if i.in_I > 0:
+                Q = (i.in_I**2)*self.r*self.time
                 self.temp += Q/self.Dc
 
         if self.temp != self.ambient_temp:
@@ -151,10 +159,11 @@ class source(component):
         self.Hz = kwargs.get('frequency',1)
         self.Dhz = self.Hz
 
-    def upgrade(self):
-        self.get_terminal("+").set(v=self.V,i=self.I,hz=self.Hz)
-        self.get_terminal("-").set(v=self.V,i=self.I,hz=self.Hz)
+        
 
+    def upgrade(self):
+        self.get_terminal("+").set(out_v=self.V,out_I=self.I,hz=self.Hz)
+        self.get_terminal("-").set(out_v=self.V,out_I=self.I,hz=self.Hz)
         self.forward()
 
 
@@ -187,22 +196,21 @@ class Led(component):
             Tn = self.get_terminal("-")
 
 
-            W = (Tp.v*Tp.i)
+            W = (Tp.in_v*Tp.in_I)
             
-            if W <= self.watts:
-                if Tp.v > 0:
-                    Tn.set(v=Tp.v,i=Tp.i,hz=Tp.hz)
+            if not self.is_break:
+                if W <= self.watts:
+                    if Tp.in_v > 0:
+                        Tn.set(out_v=Tp.in_v,out_I=Tp.in_I,hz=Tp.hz)
+                        self.light_color = [i*Tp.in_v for i in self.porcent]
 
-                if Tp.v > 0:
-                    self.light_color = [i*Tp.v for i in self.porcent]
+                    else:
+                        self.light_color = self.off_color
+
+                    self.forward()
 
                 else:
-                    self.light_color = self.off_color
-
-                self.forward()
-
-            else:
-                self.is_break = True
+                    self.is_break = True
 
                 
 
@@ -235,9 +243,9 @@ class Multimeter(component):
         T2 = self.get_terminal("-")
         
 
-        self.V = T1.v-T2.v
+        self.V = T1.in_v - T2.in_v
 
-        self.i = T1.i
+        self.i = T1.in_I
 
         self.hz = T1.hz
 
@@ -247,9 +255,10 @@ class Multimeter(component):
         else:
             self.R = 0
 
+        T2.set(out_v=T1.in_v,out_I=T1.in_I,hz=self.hz)
+
         self.forward()
 
-        T1.set(v=0,i=0,hz=0)
         
 
 class  wire(component):
@@ -286,14 +295,17 @@ class Resistor(component):
 
             t1 = self.get_terminal("2")
             t2 = self.get_terminal("1")
-            if self.get_terminal("1").v > 0:
+            if self.get_terminal("1").in_v > 0:
                 t1 = self.get_terminal("1")
                 t2 = self.get_terminal("2")
 
-            if t1.v > 0:
-                I = t1.v/self.r
-                t2.set(v=t1.v,i=I,hz=t1.hz)
-                print(I)
+            
+            I = t1.in_v/self.r
+            t2.set(out_v=t1.in_v,out_I=I,hz=t1.hz)
+            print(I)
 
             self.forward()
+
+        else:
+            print("break")
 

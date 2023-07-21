@@ -178,24 +178,29 @@ class action_bar(BoxLayout):
     def __init__(self,**kwargs):
         super().__init__(**kwargs)
         self.size_hint = (1,None)
+        self.orientation = "horizontal"
         self.height = 20
 
-
         
-        self.project = Button(text="project",size_hint=(None,1),width=50,
+        
+        self.project = Button(text="Project",size_hint=(None,1),width=60,
                               background_color=(0,0,0,0))
-        
+
         self.home = Button(text="Home",size_hint=(None,1),width=50,
                            background_color=(0,0,0,0))
-        self.home.on_press = lambda *args: self.trocar_tela("home")
 
-        self.pcb = Button(text="Pcb Editor",size_hint=(None,1),width=70,
-                           background_color=(0,0,0,0))
-        self.pcb.on_press = lambda *args: self.trocar_tela("pcbeditor")
+        self.home.on_press = lambda *args: self.trocar_tela("home")
 
         self.main = Button(text="Main",size_hint=(None,1),width=50,
                            background_color=(0,0,0,0))
         self.main.on_press = lambda *args: self.trocar_tela("main")
+
+        self.pcb = Button(text="Pcb Editor",size_hint=(None,1),width=71,
+                           background_color=(0,0,0,0))
+
+        self.pcb.on_press = lambda *args: self.trocar_tela("pcbeditor")
+
+        
         
         
         self.project.on_press = self.project_pop_up
@@ -329,6 +334,8 @@ class mainScreen(Screen):
         
 class SciTechSim(App):
     def build(self):
+
+        self.title = "simulador de física,química e essas porra tudo do kua super pika 2099"
         
         return screenManager0()
 

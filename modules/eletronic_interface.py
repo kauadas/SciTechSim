@@ -135,8 +135,11 @@ class Multimeter(Component):
         v = self.component.V
         i = self.component.i
         hz = self.component.hz
-        print(v,i,hz)
         self.text.text = F"V: {v} I: {i} Hz: {hz}"
+
+    def reset(self):
+        self.text.text = F"V: 0 I: 0 Hz: 0"
+
 
 # objeto resistor
 class Resistor(Component):
@@ -239,6 +242,8 @@ class Led(Component):
         
         self.color1.rgba = [i/255 for i in self.component.light_color]
         
+    def reset(self):
+        self.color1.rgba = [i/255 for i in self.component.off_color]
 
     def update(self,*args):
         
@@ -520,27 +525,43 @@ class CircuitEditor(Widget):
         self.components = {}
         self.pcbs["0"] = get_pcb_json(self.components)
         self.running = None
-        self.Button1 = Button(text="add component",size=(100,50),pos=self.pos,
+
+        self.Button1 = Button(background_normal="./assets/add.png",size=(50,50),pos=self.pos,
         font_size=10)
         self.Button1.on_press = self.on_btn1
+        with self.Button1.canvas.after:
+            self.icon1 = Rectangle(size=self.Button1.size,source="./assets/add.png",pos=self.pos)
         self.add_widget(self.Button1)
-        self.Button2 = Button(text="remove component",size=(100,50),pos=self.pos,
+
+        self.Button2 = Button(size=(50,50),pos=self.pos,
         font_size=10)
         self.Button2.on_press = self.remove_component
+        with self.Button2.canvas.after:
+            self.icon2 = Rectangle(size=self.Button2.size,source="./assets/remove.png",pos=self.Button2.pos)
+
         self.add_widget(self.Button2)
-        self.Button3 = Button(text="config component",size=(100,50),pos=self.pos,
+
+        self.Button3 = Button(size=(50,50),pos=self.pos,
         font_size=10)
         self.Button3.on_press = self.config_component
+        with self.Button3.canvas.after:
+            self.icon3 = Rectangle(size=self.Button3.size,source="./assets/config.png",pos=self.Button3.pos)
+
         self.add_widget(self.Button3)
 
-        self.Button4 = Button(text="run",size=(100,50),pos=self.pos,
+        self.Button4 = Button(size=(50,50),pos=self.pos,
         font_size=10)
         self.Button4.on_press = self.on_run
+        with self.Button4.canvas.after:
+            self.icon4 = Rectangle(size=self.Button4.size,source="./assets/play.png",pos=self.Button4.pos)
+
         self.add_widget(self.Button4)
 
-        self.Button5 = Button(text="rotate",size=(100,50),pos=self.pos,
+        self.Button5 = Button(size=(50,50),pos=self.pos,
         font_size=10)
         self.Button5.on_press = self.rotate_btn
+        with self.Button5.canvas.after:
+            self.icon5 = Rectangle(size=self.Button5.size,source="./assets/rotate.png",pos=self.Button5.pos)
         self.add_widget(self.Button5)
         
         with self.canvas.before:
@@ -558,6 +579,8 @@ class CircuitEditor(Widget):
         self.Button1.x = self.x-self.Button1.width
         self.Button1.y = self.y+self.height-self.Button1.height
 
+        
+
         self.Button2.x = self.x-self.Button2.width
         self.Button2.y = self.y+self.height-self.Button2.height-50
 
@@ -565,10 +588,20 @@ class CircuitEditor(Widget):
         self.Button3.y = self.y+self.height-self.Button3.height-100
 
         self.Button4.x = self.x-self.Button3.width
-        self.Button4.y = self.y+self.height-self.Button3.height-200
+        self.Button4.y = self.y+self.height-self.Button4.height-200
 
         self.Button5.x = self.x-self.Button3.width
-        self.Button5.y = self.y+self.height-self.Button3.height-150
+        self.Button5.y = self.y+self.height-self.Button4.height-150
+
+        self.icon1.pos = self.Button1.pos
+
+        self.icon2.pos = self.Button2.pos
+
+        self.icon3.pos = self.Button3.pos
+
+        self.icon4.pos = self.Button4.pos
+
+        self.icon5.pos = self.Button5.pos
         
 
         for i in self.components.values():
@@ -602,27 +635,29 @@ class CircuitEditor(Widget):
         newComponent(widget=self).open()
     
     def run(self,*args):
-        print("ok")
+        
         for i in self.components.values():
             if i.component.is_source:
                 i.component.upgrade()
 
     def on_run(self,*args):
         if self.running:
-            self.Button4.text = "run"
+            self.icon4.source = "./assets/play.png"
+
             self.running.cancel()
             self.running = None
 
             for i in self.components.values():
                 i.component.reset()
-                i.component.upgrade()
+
+                if hasattr(i,"reset"):
+                    i.reset()
+                
 
             
 
         else:
-            self.Button4.text = "stop"
-            
-
+            self.icon4.source = "./assets/stop.png"
             self.running = Clock.schedule_interval(self.run, 0.1)
 
 

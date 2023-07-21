@@ -161,27 +161,28 @@ class molecule:
     def setup(self):
         elements = {}
         for n,i in enumerate(self.formule):
-            element = periodicTable().get_by(symbol=i)
-            if element:
-                element = element()
+            element = periodicTable().get_by(symbol=i[0])
 
-                self.atoms[str(int(n/2))] = element
+            element = element()
+
+            self.atoms[str(n)] = element
 
         for n,i in enumerate(self.formule):
-            if not periodicTable().get_by(symbol=i):
-                self.covalent_number += 1
-                element0 = self.atoms[str(int((n-1)/2))]
-                element1 = self.atoms[str(int((n+1)/2))]
-                element0.connect(i,element1)
+            element0 = self.atoms.get(str(n))
+            for c in i[1::]:
+                type = c[0]
+                print(c)
+                element1 = self.atoms.get(str(c[1]))
+                element0.connect(type,element1)
+                
 
 
     def get_formule(self):
         chemical_formula = ""
         formule = [i.symbol for i in self.atoms.values()]
-
         F = []
         for symbol in formule:
-            count = sum(1 for s in self.formule if s == symbol)
+            count = formule.count(symbol)
             if symbol not in F:
                 if count == 1:
                    chemical_formula += symbol
