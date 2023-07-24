@@ -25,6 +25,42 @@ def abs_vector(x: list):
 
     return math.sqrt(y)
 
+class vector:
+    def __init__(self,*args):
+        self.values = args
+
+    def __add__(self,other):
+        if isinstance(other,vector):
+            return vector(*[x + y for x,y in zip(self.values,other.values)])
+
+        elif isinstance(other,int):
+            return vector(*[x + other for x in self.values])
+
+    def __mul__(self,other):
+        if isinstance(other,vector):
+            return vector(*[x * y for x,y in zip(self.values,other.values)])
+
+        elif isinstance(other,int):
+            return vector(*[x * other for x in self.values])
+
+    def __truediv__(self,other):
+        if isinstance(other,vector):
+            return vector(*[x / y for x,y in zip(self.values,other.values)])
+
+        elif isinstance(other,int):
+            return vector(*[x / other for x in self.values])
+
+    def __pow__(self,other):
+        if isinstance(other,vector):
+            return vector(*[x ** y for x,y in zip(self.values,other.values)])
+
+        elif isinstance(other,int):
+            return vector(*[x ** other for x in self.values])
+
+    def abs(self):
+        pass
+
+
 #classe pai body representa corpos físicos
 class body:
     def __init__(self,**kwargs):
@@ -80,13 +116,30 @@ class wave:
         self.a = kwargs.get("a")
         self.T = kwargs.get("T")
         self.A = kwargs.get("A",2)
-        self.E = H*C/self.A
+        
         self.P = kwargs,get("P")
         self.I = self.P / 4*pi
         self.origin = kwargs.get("origin",[0,0,0])
         self.V = kwargs.get("V",C)
+        self.E = H*self.V/self.A
         self.R = 0
 
     def upgrade(self):
             self.R += self.V
             self.I = self.P / 4*pi*self.R**2
+
+
+
+def calc(gradient: list,V: list,p,Fbody: list,u):
+    Ap = [i*p for i in gradient]
+
+    nAp = [i*-1 for i in Ap]
+
+    uA2 = [u*(i**2) for i in gradient]
+
+    uA2v = [i*i2 for i,i2 in zip(uA2,V)]
+
+    p1 = add_lists(nAp, uA2v)
+
+    return add_lists([p*i for i in Fbody],p1)
+
