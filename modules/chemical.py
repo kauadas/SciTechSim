@@ -50,11 +50,8 @@ class Element:
 
             if i.symbol != self.symbol:
                 electronegativity += i.electronegativity
-
-
-        
-
-        self.formal_charge = self.free_eletrons - (self.free_eletrons-share_eletrons) - 0.5*share_eletrons
+                
+        self.formal_charge = self.free_eletrons - ((self.free_eletrons-share_eletrons) + 0.5*share_eletrons)
 
 
         self.Nox = self.formal_charge

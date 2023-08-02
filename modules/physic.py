@@ -18,12 +18,7 @@ def subtract_lists(list1: list, list2: list):
     return [x - y for x,y in zip(list1,list2)]
 
 #calcula o modulo do vetor
-def abs_vector(x: list):
-    y = 0
-    for i in x:
-        y += i**2
-
-    return math.sqrt(y)
+ 
 
 class vector:
     def __init__(self,*args):
@@ -36,18 +31,26 @@ class vector:
         elif isinstance(other,int):
             return vector(*[x + other for x in self.values])
 
+    def __sub__(self,other):
+        if isinstance(other,vector):
+            return vector(*[x - y for x,y in zip(self.values,other.values)])
+
+        elif isinstance(other,int):
+            return vector(*[x - other for x in self.values])
+
+
     def __mul__(self,other):
         if isinstance(other,vector):
             return vector(*[x * y for x,y in zip(self.values,other.values)])
 
-        elif isinstance(other,int):
+        else:
             return vector(*[x * other for x in self.values])
 
     def __truediv__(self,other):
         if isinstance(other,vector):
             return vector(*[x / y for x,y in zip(self.values,other.values)])
 
-        elif isinstance(other,int):
+        else:
             return vector(*[x / other for x in self.values])
 
     def __pow__(self,other):
@@ -57,8 +60,33 @@ class vector:
         elif isinstance(other,int):
             return vector(*[x ** other for x in self.values])
 
-    def abs(self):
-        pass
+
+    def __iadd__(self, other):
+            if isinstance(other, vector):
+                self.values = [x + y for x,y in zip(self.values,other.values)]
+            else:
+                self.values = [x + other for x in self.values]
+
+            return self
+
+    def __isub__(self, other):
+            if isinstance(other, vector):
+                self.values = [x - y for x,y in zip(self.values,other.values)]
+            else:
+                self.values = [x - other for x in self.values]
+
+            return self
+
+
+    def sqrt(self):
+        return vector(*[math.sqrt(x) for x in self.values])
+
+    def __abs__(self):
+        y = 0
+        for i in self.values:
+            y += i**2
+
+        return math.sqrt(y)
 
 
 #classe pai body representa corpos físicos
@@ -66,22 +94,22 @@ class body:
     def __init__(self,**kwargs):
         self.m = kwargs.get("m", 0)
         self.Q = kwargs.get("Q", 0)
-        self.pos = kwargs.get("pos", [0, 0, 0])
-        self.v = kwargs.get("v", [0, 0, 0])
-        self.a = kwargs.get("a", [0, 0, 0])
+        self.pos = vector(*kwargs.get("pos", [0, 0, 0]))
+        self.v = vector(*kwargs.get("v", [0, 0, 0]))
+        self.a = vector(*kwargs.get("a", [0, 0, 0]))
 
-        self.angle = kwargs.get("angle", [0, 0, 0])
-        self.aV = kwargs.get("angular_velocity", [0, 0, 0])
-        self.aA = kwargs.get("angular_aceleration", [0, 0, 0])
+        self.angle = vector(*kwargs.get("angle", [0, 0, 0]))
+        self.aV = vector(*kwargs.get("angular_velocity", [0, 0, 0]))
+        self.aA = vector(*kwargs.get("angular_aceleration", [0, 0, 0]))
         
 
         self.colision = {}
 
 
     def upgrade(self):
-        self.pos = add_lists(self.pos,self.v)
-        self.v = add_lists(self.v,self.a)
-        self.angle = add_lists(self.angle,self.aV)
+        self.pos = self.pos + self.v
+        self.v = self.v + self.a
+        self.angle = self.angle + self.aV
         self.aV = add_lists(self.aV,self.aA)
 
     def is_collide(self,obj2):
@@ -101,12 +129,10 @@ class ambient:
 
         
 
-def to_vector(i: float,ab: list):
-    abs_ab = abs_vector(ab)
+def to_vector(i: float,ab: vector):
+    nAB = ab/abs(ab)
 
-    nAB = [x/abs_ab for x in ab]
-
-    Y = [i*x for x in nAB]
+    Y = nAB*i
 
     return Y
 
@@ -143,3 +169,34 @@ def calc(gradient: list,V: list,p,Fbody: list,u):
 
     return add_lists([p*i for i in Fbody],p1)
 
+
+class Wave_Particle:
+    def __init__(self,**kwargs):
+        self.A = kwargs.get("A")
+
+        self.m = kwargs.get("m")
+
+        self.V = kwargs.get("v")
+
+        self.a = H/self.m*self.V
+
+        self.F = kwargs.get("F")
+
+    def psi(self,x,t):
+        return self.A*(math.sin((x*2*pi)/self.a - self.F*2*pi*t))
+
+
+def Fg(body1: body,body2: body):
+    m = body1.m
+    M = body2.m
+    pos1 = body1.pos
+    pos2 = body2.pos
+    ab = pos2 - pos1
+    r = abs(pos2 - pos1)
+    F = G*(m*M)/r**2
+
+    F_vector = to_vector(F,ab)
+
+    return F_vector
+
+    

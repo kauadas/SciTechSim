@@ -306,3 +306,6 @@ class Resistor(component):
         else:
             print("break")
 
+class Capacitor(component):
+    def __init__():
+        pass
