@@ -130,7 +130,9 @@ class ambient:
         
 
 def to_vector(i: float,ab: vector):
+    print(ab.values)
     nAB = ab/abs(ab)
+    print(nAB.values)
 
     Y = nAB*i
 
@@ -192,9 +194,9 @@ def Fg(body1: body,body2: body):
     pos1 = body1.pos
     pos2 = body2.pos
     ab = pos2 - pos1
-    r = abs(pos2 - pos1)
+    r = abs(pos1 + pos2)
     F = G*(m*M)/r**2
-
+    print(F)
     F_vector = to_vector(F,ab)
 
     return F_vector
