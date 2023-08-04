@@ -130,9 +130,7 @@ class ambient:
         
 
 def to_vector(i: float,ab: vector):
-    print(ab.values)
     nAB = ab/abs(ab)
-    print(nAB.values)
 
     Y = nAB*i
 
@@ -158,16 +156,14 @@ class wave:
 
 
 
-def calc(gradient: list,V: list,p,Fbody: list,u):
-    Ap = [i*p for i in gradient]
-
-    nAp = [i*-1 for i in Ap]
+def navier_stocks(gradient: list,V: list,p,Fbody: list,u):
+    Ap = [i*p*-1 for i in gradient]
 
     uA2 = [u*(i**2) for i in gradient]
 
     uA2v = [i*i2 for i,i2 in zip(uA2,V)]
 
-    p1 = add_lists(nAp, uA2v)
+    p1 = add_lists(Ap, uA2v)
 
     return add_lists([p*i for i in Fbody],p1)
 
@@ -193,12 +189,12 @@ def Fg(body1: body,body2: body):
     M = body2.m
     pos1 = body1.pos
     pos2 = body2.pos
-    ab = pos2 - pos1
-    r = abs(pos1 + pos2)
-    F = G*(m*M)/r**2
-    print(F)
-    F_vector = to_vector(F,ab)
+    ab = pos1 - pos2
+    r = pos1 - pos2
+    F = G*(m*M)/abs(r)**2
 
+    F_vector = to_vector(F,ab)
+    
     return F_vector
 
     
