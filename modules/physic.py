@@ -94,6 +94,7 @@ class body:
     def __init__(self,**kwargs):
         self.m = kwargs.get("m", 0)
         self.Q = kwargs.get("Q", 0)
+        self.resultant_forces = {}
         self.pos = vector(*kwargs.get("pos", [0, 0, 0]))
         self.v = vector(*kwargs.get("v", [0, 0, 0]))
         self.a = vector(*kwargs.get("a", [0, 0, 0]))
@@ -103,29 +104,53 @@ class body:
         self.aA = vector(*kwargs.get("angular_aceleration", [0, 0, 0]))
         
 
-        self.colision = {}
+        self.image = {}
 
 
     def upgrade(self):
+        self.a = sum(list(self.resultant_forces.values),start=vector(*[0 for i in self.body.pos]))/self.m
         self.pos = self.pos + self.v
         self.v = self.v + self.a
         self.angle = self.angle + self.aV
         self.aV = add_lists(self.aV,self.aA)
 
     def is_collide(self,obj2):
-        for key,value in self.colision.items():
+        for key,value in self.image.items():
             pass
+
+
+
+
+
+
+def create_matrix(size_x: int,size_y: int,value_zero):
+        values = []
+        for y in range(size_y):
+            values.append([])
+            for x in range(size_x):
+                values[y].append(value_zero)
+
+        return values
 
 class ambient:
     def __init__(self,**kwargs):
         self.objects = []
+        self.universal_forces = []
+        self.w,self.h = kwargs.get("size")
 
         self.G = kwargs.get("G",G)
         self.K = kwargs.get("K",K)
         self.time = kwargs.get("time",1)
 
     def upgrade(self):
-        pass
+        for obj in self.objects:
+            obj.upgrade()
+
+        for force,i,obj in zip(self.universal_forces,enumarate(self.objects)):
+            
+            if len(self.objects)-1 >= i+1:
+                obj2 = self.objects(i+1)
+                force(self.ambient,obj,obj2)
 
         
 
@@ -184,17 +209,20 @@ class Wave_Particle:
         return self.A*(math.sin((x*2*pi)/self.a - self.F*2*pi*t))
 
 
-def Fg(body1: body,body2: body):
-    m = body1.m
-    M = body2.m
-    pos1 = body1.pos
-    pos2 = body2.pos
-    ab = pos1 - pos2
-    r = pos1 - pos2
-    F = G*(m*M)/abs(r)**2
-
-    F_vector = to_vector(F,ab)
+def Fg(ambient: ambient,body1: body,body2: body):
+    G = ambient.G
+    ab = body2.pos-body1.pos
+    r = abs(body1.pos - body2.pos)
     
-    return F_vector
+    F_scale = G*body1.m*body2.m/r**2
 
-    
+    if F_scale/body1.m < C:
+        F_vector = to_vector(F_scale,ab)
+
+        body1.resultant_forces["Fg"] = F_vector
+        body2.resultant_forces["Fg"] = F_vector*-1
+
+        return F_vector
+
+def Fp(ambient: ambient,body1: body,*args):
+    body1.resultant_forces["Fp"] = vector(0,body1.m*ambient.G,0)
