@@ -1,11 +1,13 @@
 import math
 import time
+from modules.matematic import *
 
 pi = math.pi
 G = 6.674*(10**-11)
 K = 9*(10**9)
 H = 6.62607015*(10**-36)
 C = 299792458
+k = 8*pi*G/C**4
 
 # soma duas listas
 def add_lists(list1: list, list2: list):
@@ -17,78 +19,8 @@ def add_lists(list1: list, list2: list):
 def subtract_lists(list1: list, list2: list):
     return [x - y for x,y in zip(list1,list2)]
 
-#calcula o modulo do vetor
- 
 
-class vector:
-    def __init__(self,*args):
-        self.values = args
-
-    def __add__(self,other):
-        if isinstance(other,vector):
-            return vector(*[x + y for x,y in zip(self.values,other.values)])
-
-        elif isinstance(other,int):
-            return vector(*[x + other for x in self.values])
-
-    def __sub__(self,other):
-        if isinstance(other,vector):
-            return vector(*[x - y for x,y in zip(self.values,other.values)])
-
-        elif isinstance(other,int):
-            return vector(*[x - other for x in self.values])
-
-
-    def __mul__(self,other):
-        if isinstance(other,vector):
-            return vector(*[x * y for x,y in zip(self.values,other.values)])
-
-        else:
-            return vector(*[x * other for x in self.values])
-
-    def __truediv__(self,other):
-        if isinstance(other,vector):
-            return vector(*[x / y for x,y in zip(self.values,other.values)])
-
-        else:
-            return vector(*[x / other for x in self.values])
-
-    def __pow__(self,other):
-        if isinstance(other,vector):
-            return vector(*[x ** y for x,y in zip(self.values,other.values)])
-
-        elif isinstance(other,int):
-            return vector(*[x ** other for x in self.values])
-
-
-    def __iadd__(self, other):
-            if isinstance(other, vector):
-                self.values = [x + y for x,y in zip(self.values,other.values)]
-            else:
-                self.values = [x + other for x in self.values]
-
-            return self
-
-    def __isub__(self, other):
-            if isinstance(other, vector):
-                self.values = [x - y for x,y in zip(self.values,other.values)]
-            else:
-                self.values = [x - other for x in self.values]
-
-            return self
-
-
-    def sqrt(self):
-        return vector(*[math.sqrt(x) for x in self.values])
-
-    def __abs__(self):
-        y = 0
-        for i in self.values:
-            y += i**2
-
-        return math.sqrt(y)
-
-
+        
 #classe pai body representa corpos físicos
 class body:
     def __init__(self,**kwargs):
@@ -117,9 +49,6 @@ class body:
     def is_collide(self,obj2):
         for key,value in self.image.items():
             pass
-
-
-
 
 
 
@@ -154,7 +83,7 @@ class ambient:
 
         
 
-def to_vector(i: float,ab: vector):
+def to_vector(i: float,ab: matematic.vector):
     nAB = ab/abs(ab)
 
     Y = nAB*i
@@ -181,16 +110,16 @@ class wave:
 
 
 
-def navier_stocks(gradient: list,V: list,p,Fbody: list,u):
-    Ap = [i*p*-1 for i in gradient]
+def navier_stocks(gradient: vector,V: vector,p,Fbody: vector,u):
+    Ap = (gradient*p)*-1
 
-    uA2 = [u*(i**2) for i in gradient]
+    uA2 = (gradient**2)*u
 
-    uA2v = [i*i2 for i,i2 in zip(uA2,V)]
+    uA2v = V*uA2
 
-    p1 = add_lists(Ap, uA2v)
+    p1 = Ap + uA2v
 
-    return add_lists([p*i for i in Fbody],p1)
+    return Fbody*p + p1
 
 
 class Wave_Particle:
@@ -226,3 +155,12 @@ def Fg(ambient: ambient,body1: body,body2: body):
 
 def Fp(ambient: ambient,body1: body,*args):
     body1.resultant_forces["Fp"] = vector(0,body1.m*ambient.G,0)
+
+
+def Tuv(U: vector,p,P,u: vector,n: tensor):
+    v = U/abs(U)
+    pp = (p+P)
+    Uvu = U**(v+u)
+    Pn = P*n
+
+    return pp*Uvu + Pn
