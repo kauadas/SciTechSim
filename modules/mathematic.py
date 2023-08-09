@@ -54,7 +54,9 @@ class vector:
                 self.values = [x - other for x in self.values]
 
             return self
-
+            
+    def __getitem__(self, item):
+         return self.values[item]
 
     def sqrt(self):
         return vector(*[math.sqrt(x) for x in self.values])

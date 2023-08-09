@@ -24,6 +24,7 @@ def subtract_lists(list1: list, list2: list):
 #classe pai body representa corpos físicos
 class body:
     def __init__(self,**kwargs):
+        self.id = kwargs.get("id")
         self.m = kwargs.get("m", 0)
         self.Q = kwargs.get("Q", 0)
         self.resultant_forces = {}
@@ -41,6 +42,7 @@ class body:
 
     def upgrade(self):
         self.a = sum(list(self.resultant_forces.values),start=vector(*[0 for i in self.body.pos]))/self.m
+        self.resultant_forces.clear()
         self.pos = self.pos + self.v
         self.v = self.v + self.a
         self.angle = self.angle + self.aV
@@ -65,7 +67,6 @@ class ambient:
     def __init__(self,**kwargs):
         self.objects = []
         self.universal_forces = []
-        self.w,self.h = kwargs.get("size")
 
         self.G = kwargs.get("G",G)
         self.K = kwargs.get("K",K)
