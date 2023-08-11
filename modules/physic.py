@@ -20,7 +20,6 @@ def subtract_lists(list1: list, list2: list):
     return [x - y for x,y in zip(list1,list2)]
 
 
-        
 #classe pai body representa corpos físicos
 class body:
     def __init__(self,**kwargs):
@@ -37,7 +36,7 @@ class body:
         self.aA = vector(*kwargs.get("angular_aceleration", [0, 0, 0]))
         
 
-        self.image = {}
+        self.matriz = {}
 
 
     def upgrade(self):
@@ -46,11 +45,14 @@ class body:
         self.pos = self.pos + self.v
         self.v = self.v + self.a
         self.angle = self.angle + self.aV
-        self.aV = add_lists(self.aV,self.aA)
+        self.aV = self.aV + self.aA
 
     def is_collide(self,obj2):
-        for key,value in self.image.items():
-            pass
+        
+        for key,value in self.matriz.items():
+            for key2,value2 in obj2.matriz.items():
+                pass
+
 
 
 
@@ -65,7 +67,7 @@ def create_matrix(size_x: int,size_y: int,value_zero):
 
 class ambient:
     def __init__(self,**kwargs):
-        self.objects = []
+        self.objects = {}
         self.universal_forces = []
 
         self.G = kwargs.get("G",G)
@@ -77,10 +79,7 @@ class ambient:
             obj.upgrade()
 
         for force,i,obj in zip(self.universal_forces,enumarate(self.objects)):
-            
-            if len(self.objects)-1 >= i+1:
-                obj2 = self.objects(i+1)
-                force(self.ambient,obj,obj2)
+            force(self.ambient,obj)
 
         
 
