@@ -519,11 +519,9 @@ class config_connections(Popup):
 class CircuitEditor(Widget):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        self.project = kwargs.get("project")
         self.select = None
         self.size_hint = (None,None)
-        self.pcbs = {}
-        self.components = {}
-        self.pcbs["0"] = get_pcb_json(self.components)
         self.running = None
 
         self.Button1 = Button(background_normal="./assets/add.png",size=(50,50),pos=self.pos,
@@ -563,6 +561,20 @@ class CircuitEditor(Widget):
         with self.Button5.canvas.after:
             self.icon5 = Rectangle(size=self.Button5.size,source="./assets/rotate.png",pos=self.Button5.pos)
         self.add_widget(self.Button5)
+
+        self.Button6 = Button(size=(50,50),pos=self.pos,
+        font_size=10)
+        self.Button6.on_press = self.save
+        with self.Button6.canvas.after:
+            self.icon6 = Rectangle(size=self.Button6.size,source="./assets/rotate.png",pos=self.Button6.pos)
+        self.add_widget(self.Button6)
+
+        self.Button7 = Button(size=(50,50),pos=self.pos,
+        font_size=10)
+        self.Button7.on_press = self.load_project
+        with self.Button7.canvas.after:
+            self.icon7 = Rectangle(size=self.Button7.size,source="./assets/rotate.png",pos=self.Button7.pos)
+        self.add_widget(self.Button7)
         
         with self.canvas.before:
             Color(68/255, 71/255, 90/255, 1.0)
@@ -570,6 +582,30 @@ class CircuitEditor(Widget):
 
         
         self.bind(pos=self.update, size=self.update)
+        self.load_project()
+
+    def save(self):
+        self.pcbs[self.atual_pcb] = pcb_to_json(self.components)
+
+        if self.project:
+            self.project["circuits"] = self.pcbs
+
+        print(self.project)
+    
+    def load_project(self):
+        if self.project:
+            self.pcbs = self.project.get("circuits")
+            self.atual_pcb = list(self.pcbs.keys())[0]
+            for c in json_to_pcb(self.pcbs[self.atual_pcb]).values():
+                self.add_component(c)
+            
+            
+        else:
+            self.pcbs = {}
+            self.components = {}
+            self.atual_pcb = "0"
+
+        self.update()
 
     def update(self, *args):
         self.rect.pos = self.pos
@@ -587,11 +623,15 @@ class CircuitEditor(Widget):
         self.Button3.x = self.x-self.Button3.width
         self.Button3.y = self.y+self.height-self.Button3.height-100
 
-        self.Button4.x = self.x-self.Button3.width
+        self.Button4.x = self.x-self.Button4.width
         self.Button4.y = self.y+self.height-self.Button4.height-200
 
-        self.Button5.x = self.x-self.Button3.width
+        self.Button5.x = self.x-self.Button5.width
         self.Button5.y = self.y+self.height-self.Button4.height-150
+
+        self.Button6.x = self.x-self.Button6.width
+        self.Button6.y = self.y+self.height-self.Button6.height-250
+
 
         self.icon1.pos = self.Button1.pos
 
@@ -602,6 +642,8 @@ class CircuitEditor(Widget):
         self.icon4.pos = self.Button4.pos
 
         self.icon5.pos = self.Button5.pos
+
+        self.icon6.pos = self.Button6.pos
         
 
         for i in self.components.values():
@@ -660,14 +702,16 @@ class CircuitEditor(Widget):
             self.running = Clock.schedule_interval(self.run, 0.1)
 
 
-def get_pcb_json(pcb: dict):
+def pcb_to_json(pcb: dict):
     components = {}
-    for name,component in components.items():
+    for name,component in pcb.items():
+        
+        components[name] = {}
         
 
         if component.component.type == "resistor":
             components[name] = {
-                "R": component.component.r
+                "r": component.component.r
             }
 
         elif component.component.type == "source":
@@ -678,16 +722,67 @@ def get_pcb_json(pcb: dict):
 
         elif component.component.type == "led":
             components[name] = {
-                "R": component.component.r,
+                "r": component.component.r,
                 "color": component.component.light_color,
                 "off_color": component.component.off_color,
                 "volts": component.component.volts,
                 "current": component.component.current
             }
 
+        components[name]["type"] = component.component.type
+        connections = {}
+        for k,i in component.component.terminals.items():
+            connections[k] = []
+            for n,c in i.out.items():
+                connections[k] = [n,c[1]]
 
+        components[name]["connections"] = connections
         components[name]['pos'] = component.circuit_pos
         components[name]['size'] = component.width
 
-
+    print(components)
     return components
+
+
+def json_to_pcb(json: dict):
+    x = {}
+    for name, component in json.items():
+        print(name)
+        if component["type"] == "resistor":
+            size = component["size"]
+            obj = Resistor(name=name,pos=component["pos"],size=(size,size))
+            obj.component.r = component["r"]
+            x[name] = obj
+
+        elif component["type"] == "source":
+            
+            size = component["size"]
+            obj = Source(name=name,pos=component["pos"],size=(size,size))
+            obj.component.V = component["V"]
+            obj.component.I = component["I"]
+            x[name] = obj
+
+        elif component["type"] == "led":
+            size = component["size"]
+            obj = Led(name=name,pos=component["pos"],size=(size,size))
+            obj.component.r = component["r"]
+            obj.component.color = component["color"]
+            obj.component.off_color = component["off_color"]
+            obj.component.volts = component["volts"]
+            obj.component.current = component["current"]
+            x[name] = obj
+
+        elif component["type"] == "multimeter":
+            size = component["size"]
+            obj = Multimeter(name=name,pos=component["pos"],size=(size,size))
+            x[name] = obj
+
+    for name, component in json.items():
+        c1 = x[name].component
+        for n,c in component["connections"].items():
+            print(n,c)
+            if len(c) > 0:
+                c1.add_connection(x[c[0]].component, n, c[1])
+                
+    print(x)
+    return x

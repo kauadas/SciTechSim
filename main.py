@@ -14,7 +14,7 @@ from kivy.uix.layout import Layout
 from kivy.graphics import Color, Rectangle, Line, PushMatrix, PopMatrix, Rotate
 
 from modules.eletronic_interface import CircuitEditor
-
+from modules.physic_interface import PhysicEditor
 from modules import project_file
 from pathlib import Path
 
@@ -24,7 +24,9 @@ project = None
 def load_project(_dir: list):
     global project
     print("loading project",_dir)
-    project = project_file.project(_dir[0])
+    if len(_dir) > 0:
+        project = project_file.project(_dir[0])
+        circuit_editor.project = project.project
 
 class screenManager0(ScreenManager):
     def __init__(self,**kwargs):
@@ -32,7 +34,7 @@ class screenManager0(ScreenManager):
 
         self.add_widget(home())
         self.add_widget(pcbEditor())
-        self.add_widget(mainScreen())
+        self.add_widget(physicEditor())
 
 
 
@@ -193,7 +195,7 @@ class action_bar(BoxLayout):
 
         self.main = Button(text="Main",size_hint=(None,1),width=50,
                            background_color=(0,0,0,0))
-        self.main.on_press = lambda *args: self.trocar_tela("main")
+        self.main.on_press = lambda *args: self.trocar_tela("physiceditor")
 
         self.pcb = Button(text="Pcb Editor",size_hint=(None,1),width=71,
                            background_color=(0,0,0,0))
@@ -264,6 +266,7 @@ class home(Screen):
 
 class pcbEditor(Screen):
     def __init__(self,**kwargs):
+        global circuit_editor
         super().__init__(**kwargs)
 
         self.name = "pcbeditor"
@@ -271,6 +274,8 @@ class pcbEditor(Screen):
         self.actionbar = action_bar()
 
         self.circuit_editor = CircuitEditor()
+        self.circuit_editor.project = project
+        circuit_editor = self.circuit_editor
         self.circuit_editor.size_hint = (0.5,0.6)
         self.circuit_editor.pos_hint = {
             "center_x": 0.5,
@@ -303,14 +308,25 @@ class pcbEditor(Screen):
 
         
 
-class mainScreen(Screen):
+class physicEditor(Screen):
     def __init__(self,**kwargs):
         super().__init__(**kwargs)
 
-        self.name = "main"
+        self.name = "physiceditor"
 
         self.actionbar = action_bar()
+
+        self.physic_editor = PhysicEditor()
+        self.physic_editor.size_hint = (0.5,0.6)
+        self.physic_editor.pos_hint = {
+            "center_x": 0.5,
+            "center_y": 0.5
+        }
         
+        
+        self.pos = (0,0) 
+
+
         with self.canvas.before:
            Color(40/255, 42/255, 54/255,1)
            self.rect0 = Rectangle(size=(50,50),pos=(0,0))
@@ -319,18 +335,18 @@ class mainScreen(Screen):
         self.rect1 = self.actionbar.rect
         
         
-        self.bind(size=self.on_resize)
+        self.bind(size=self.upgrade,pos=self.upgrade)
 
         self.add_widget(self.actionbar)
+        self.add_widget(self.physic_editor)
         
 
-    def on_resize(self,w,size):
-        print(size)
-        self.rect0.size = size
-        self.rect1.size = (size[0],20)
-        self.rect1.pos = (0,size[1]-20)
+    def upgrade(self,*args):
+    
+        self.rect0.size = self.size
+        
+        self.actionbar.pos = (0,self.size[1]-20)
 
-        self.actionbar.pos = (0,size[1]-20)
         
 class SciTechSim(App):
     def build(self):

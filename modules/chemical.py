@@ -31,8 +31,6 @@ class Element:
 
 
     def calculate_Nox(self):
-        
-
         share_eletrons = 0
         elements = []
         electronegativity = 0
@@ -54,12 +52,8 @@ class Element:
         self.formal_charge = self.free_eletrons - ((self.free_eletrons-share_eletrons) + 0.5*share_eletrons)
 
 
-        self.Nox = self.formal_charge
+        self.Nox = self.free_eletrons-self.formal_charge
 
-        if self.symbol in elements:
-            
-            self.Nox /= elements.count(self.symbol)+1
-                
 
 # tabela periodica
 
@@ -83,6 +77,8 @@ class hidrogen(Element):
 
         self.electronegativity = 2.2
 
+    def calculate_Nox(self):
+        self.Nox = +1
 
         
 class oxygen(Element):
@@ -104,7 +100,11 @@ class oxygen(Element):
 
         self.electronegativity = 3.44
 
-
+    def calculate_Nox(self):
+        self.Nox = 2
+        for i in self.connects:
+            if i[1].symbol == self.symbol:
+                self.Nox = 1
 
         
 class carbon(Element):
@@ -215,5 +215,4 @@ class molecule:
             print(i.Nox)
 
             self.Nox += i.Nox
-
 

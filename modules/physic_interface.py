@@ -1,20 +1,26 @@
 from modules import physic
 
 from kivy.uix.widget import Widget
-from kivy.graphics import Rectangle
+from kivy.graphics import *
+
 
 class body(Widget):
     def __init__(self,**kwargs):
         super().__init__(**kwargs)
         self.id = kwargs.get("id")
-
         
         self.body = physic.body(id=self.id,m=kwargs.get("m",0),Q=kwargs.get("Q",0),pos=kwargs.get("ambient_pos"))
 
         self.center_pos = self.body.pos.values[:2]
+
+        
+        self.scale = (0.175)/(self.body.pos[2]+0.175)
+
         
 
-class physicEditor(Widget):
+        
+
+class PhysicEditor(Widget):
     def __init__(self,**kwargs):
         super().__init__(**kwargs)
 

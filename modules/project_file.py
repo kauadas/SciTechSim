@@ -21,7 +21,7 @@ class project:
 
     def save(self):
         with open(self.dir,"w") as ProjFile:
-            data = json.dumps(self.project)
+            data = json.dumps(self.project,indent=4)
             ProjFile.write(data)
             print(data)
             ProjFile.close()

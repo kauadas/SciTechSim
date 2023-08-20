@@ -1,6 +1,6 @@
 import math
 import time
-from modules.matematic import *
+from modules.mathematic import *
 
 pi = math.pi
 G = 6.674*(10**-11)
@@ -42,10 +42,20 @@ class body:
     def upgrade(self):
         self.a = sum(list(self.resultant_forces.values),start=vector(*[0 for i in self.body.pos]))/self.m
         self.resultant_forces.clear()
+        if not self.m >> 0 and self.v + self.a >= c:
+            self.v = self.v + self.a
         self.pos = self.pos + self.v
-        self.v = self.v + self.a
+        
+        if not self.m >> 0 and self.aV + self.aA >= c:
+            self.aV = self.aV + self.aA
+            
         self.angle = self.angle + self.aV
-        self.aV = self.aV + self.aA
+        
+    def apply_force(self,name: str,F: float):
+        if name in self.resultant_forces:
+            self.resultant_forces[name] += F
+        else:
+            self.resultant_forces[name] = F
 
     def is_collide(self,obj2):
         
@@ -83,7 +93,7 @@ class ambient:
 
         
 
-def to_vector(i: float,ab: matematic.vector):
+def to_vector(i: float,ab: vector):
     nAB = ab/abs(ab)
 
     Y = nAB*i
@@ -138,23 +148,23 @@ class Wave_Particle:
         return self.A*(math.sin((x*2*pi)/self.a - self.F*2*pi*t))
 
 
-def Fg(ambient: ambient,body1: body,body2: body):
-    G = ambient.G
-    ab = body2.pos-body1.pos
-    r = abs(body1.pos - body2.pos)
-    
-    F_scale = G*body1.m*body2.m/r**2
+def Fg(ambient: ambient,body1: body):
+    for body2 in ambient.objects:
+        if body1.id != body2.id:
+            G = ambient.G
+            ab = body2.pos-body1.pos
+            r = abs(body1.pos - body2.pos)
+            
+            if r >= H:
+                F_scale = G*body1.m*body2.m/r**2
 
-    if F_scale/body1.m < C:
-        F_vector = to_vector(F_scale,ab)
+                F_vector = to_vector(F_scale,ab)
 
-        body1.resultant_forces["Fg"] = F_vector
-        body2.resultant_forces["Fg"] = F_vector*-1
+                body2.apply_force("Fg",F_vector*-1)
 
-        return F_vector
-
+    return body2
 def Fp(ambient: ambient,body1: body,*args):
-    body1.resultant_forces["Fp"] = vector(0,body1.m*ambient.G,0)
+    body1.apply_force("Fp", vector(0,body1.m*ambient.G,0))
 
 
 def Tuv(U: vector,p,P,u: vector,n: tensor):
@@ -164,3 +174,4 @@ def Tuv(U: vector,p,P,u: vector,n: tensor):
     Pn = P*n
 
     return pp*Uvu + Pn
+
