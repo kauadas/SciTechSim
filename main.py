@@ -27,6 +27,7 @@ def load_project(_dir: list):
     if len(_dir) > 0:
         project = project_file.project(_dir[0])
         circuit_editor.project = project.project
+        circuit_editor.load_project()
 
 class screenManager0(ScreenManager):
     def __init__(self,**kwargs):

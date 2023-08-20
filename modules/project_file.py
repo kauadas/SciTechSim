@@ -5,7 +5,7 @@ class project:
     def __init__(self,_dir: str):
         self.base = {
                 "model": {},
-                "circuits": {},
+                "circuits": {"0": {}},
                 "quantic": {},
                 "chemical": {},
                 "files": []
