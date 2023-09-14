@@ -1,6 +1,8 @@
+import math
+
 class vector:
     def __init__(self,*args):
-        self.values = args
+        self.values = list(args)
 
     def __add__(self,other):
         if isinstance(other,vector):

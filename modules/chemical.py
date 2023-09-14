@@ -126,7 +126,16 @@ class carbon(Element):
 
         self.electronegativity = 2.55
 
-        
+    def calculate_Nox(self):
+        self.Nox = -4
+
+        for i in self.connects:
+            if i[1].symbol == "O":
+                self.Nox = +2
+
+            elif i[1].symbol == "H":
+                self.Nox = -4
+                
 class periodicTable:
     def __init__(self):
         self.table = {"H": hidrogen,"O": oxygen,"C": carbon}

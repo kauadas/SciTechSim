@@ -53,25 +53,25 @@ class fileSelector(Popup):
 
         self.files = []
 
-        file_chooser = FileChooserIconView()
+        self.file_chooser = FileChooserIconView()
         if len(self.type) > 0:
-            file_chooser.filters = map(lambda x: "*"+x, self.type)
+            self.file_chooser.filters = map(lambda x: "*"+x, self.type)
         
-        file_chooser.rootpath = str(Path.home())
+        self.file_chooser.rootpath = str(Path.home())
         
         btn_new = Button(text="new file")
         btn_new.size_hint = (None,None)
         btn_new.size = (50,30)
-        btn_new.on_press = lambda *args: self.new_file(str(file_chooser.path))
+        btn_new.on_press = lambda *args: self.new_file(str(self.file_chooser.path))
 
         btn_ok = Button(text="ok")
         btn_ok.size_hint = (None,None)
         btn_ok.size = (50,30)
-        btn_ok.on_press = lambda **args: self.on_ok_press(file_chooser.selection)
+        btn_ok.on_press = lambda **args: self.on_ok_press(self.file_chooser.selection)
 
         self.add_widget(base)
 
-        base.add_widget(file_chooser)
+        base.add_widget(self.file_chooser)
         buttons = BoxLayout(size_hint=(1,None),height=30)
         buttons.add_widget(btn_new)
         buttons.add_widget(btn_ok)
@@ -108,6 +108,8 @@ class fileSelector(Popup):
 
        self.popup0.dismiss()
 
+       self.file_chooser._update_files()
+
 
 
 class ProjectPopUp(Popup):
@@ -116,12 +118,12 @@ class ProjectPopUp(Popup):
         stack_layout = StackLayout(orientation='tb-lr')
         
 
-        open_ = Button(text='open project',size_hint = (None,None),size=(100,30))
+        open_ = Button(text='Open Project',size_hint = (None,None),size=(100,30))
         open_.background_color = (0,0,0,0)
 
         open_.on_press = self.open_on_press
 
-        save = Button(text='save project',size_hint = (None,None),size=(100,30))
+        save = Button(text='Save Project',size_hint = (None,None),size=(100,30))
         save.background_color = (0,0,0,0)
 
         save.on_press = self.save

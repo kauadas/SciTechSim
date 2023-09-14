@@ -26,6 +26,7 @@ class body:
         self.id = kwargs.get("id")
         self.m = kwargs.get("m", 0)
         self.Q = kwargs.get("Q", 0)
+        self.fric = 0
         self.resultant_forces = {}
         self.pos = vector(*kwargs.get("pos", [0, 0, 0]))
         self.v = vector(*kwargs.get("v", [0, 0, 0]))
@@ -36,26 +37,36 @@ class body:
         self.aA = vector(*kwargs.get("angular_aceleration", [0, 0, 0]))
         
 
-        self.matriz = {}
+        self.matrix = kwargs.get("matrix",{})
+
+
 
 
     def upgrade(self):
-        self.a = sum(list(self.resultant_forces.values),start=vector(*[0 for i in self.body.pos]))/self.m
+        fric_total = [vector(*i.get("fric",0)) for i in self.matrix.values()]
+        self.fric = sum(fric_total,start=vector(0,0,0))/len(fric_total)
+        print("fric",self.fric)
+            
+        if self.m != 0:
+            self.a = sum(list(self.resultant_forces.values()),start=vector(*[0 for i in self.pos]))/self.m
+
+        else:
+            self.a = sum(list(self.resultant_forces.values()),start=vector(*[0 for i in self.pos]))
+
         self.resultant_forces.clear()
-        if not self.m >> 0 and self.v + self.a >= c:
+        if self.m >> 0 and abs(self.v) + abs(self.a) < C:
             self.v = self.v + self.a
+
         self.pos = self.pos + self.v
         
-        if not self.m >> 0 and self.aV + self.aA >= c:
+        if not self.m >> 0 and abs(self.aV) + abs(self.aA) >= C:
             self.aV = self.aV + self.aA
             
         self.angle = self.angle + self.aV
         
-    def apply_force(self,name: str,F: float):
-        if name in self.resultant_forces:
-            self.resultant_forces[name] += F
-        else:
-            self.resultant_forces[name] = F
+    def apply_force(self,name: str,F):
+        self.resultant_forces[name] = F
+        
 
     def is_collide(self,obj2):
         
@@ -85,11 +96,16 @@ class ambient:
         self.time = kwargs.get("time",1)
 
     def upgrade(self):
-        for obj in self.objects:
+        for force in self.universal_forces:
+            for obj in self.objects.values():
+                force(self,obj)
+
+        for obj in self.objects.values():
             obj.upgrade()
 
-        for force,i,obj in zip(self.universal_forces,enumarate(self.objects)):
-            force(self.ambient,obj)
+            print(obj.v.values)
+
+        
 
         
 
@@ -163,8 +179,23 @@ def Fg(ambient: ambient,body1: body):
                 body2.apply_force("Fg",F_vector*-1)
 
     return body2
+
+def Fat(ambient: ambient,body1: body):
+    Fat = body1.v*(body1.fric/2)*-2
+    body1.apply_force("Fat",Fat)
+    print(Fat.values)
+    return Fat
+
 def Fp(ambient: ambient,body1: body,*args):
-    body1.apply_force("Fp", vector(0,body1.m*ambient.G,0))
+    if body1.pos.values[1] > 0:
+        body1.apply_force("Fp", vector(0,-body1.m*0.098,0))
+
+        print("fp",body1.resultant_forces['Fp'].values)
+
+    else:
+        body1.v.values[1] = 0
+
+    print("y",body1.pos.values[1])
 
 
 def Tuv(U: vector,p,P,u: vector,n: tensor):

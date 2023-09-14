@@ -183,7 +183,7 @@ class Led(component):
             
             self.watts = self.volts*self.current
 
-            self.porcent = [i/self.volts for i in self.color]
+            self.porcent = [i/self.watts for i in self.color]
             self.zero = 116/255
             self.light_color = self.off_color
 
@@ -199,7 +199,7 @@ class Led(component):
                 if W <= self.watts:
                     if Tp.in_v > 0:
                         Tn.set(out_v=Tp.in_v,out_I=Tp.in_I,hz=Tp.hz)
-                        self.light_color = [i*Tp.in_v for i in self.porcent]
+                        self.light_color = [i*Tp.in_v*Tp.in_I for i in self.porcent]
 
                     else:
                         self.light_color = self.off_color
@@ -306,6 +306,56 @@ class Resistor(component):
         else:
             print("break")
 
+
+
+
+class Pic(component):
+    def __init__(self,**kwargs):
+        super().__init__(**kwargs)
+        self.code = ""
+
+    def upgrade(self):
+        eval("from modules import pic",self.code)
+        self.forward()
+
+
+class picCompiler:
+    def __init__(self,pic: Pic,code: str):
+        low = 0
+        high = 5
+        self.pic = pic
+        self.code = code
+
+    def digital_write(self,port: int,value: int):
+        self.pic.get_terminal(port).set(v=hight)
+
 class Capacitor(component):
-    def __init__():
-        pass
+    def __init__(self,**kwargs):
+        super().__init__(**kwargs)
+        self.terminals = {"+": terminal(polarity="+"),
+                          "-": terminal(polarity="-")}
+
+        self.c = kwargs.get("C",10)
+        self.old_i = 0
+        self.C_i = 0
+
+    def upgrade(self):
+        tp = self.get_terminal("+")
+        tn = self.get_terminal("-")
+
+        if not self.is_break:
+            if self.old_i != 0 and tp.in_I != self.old_i:
+                tn.set(out_I=self.C_i,out_v=tp.in_v)
+
+            elif self.C_i + tp.in_I > self.c*tp.in_v:
+                self.is_break = True
+
+            else:
+                self.old_i = tp.in_I
+
+                self.C_i += tp.in_I
+
+            
+
+
+
