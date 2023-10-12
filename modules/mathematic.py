@@ -80,3 +80,21 @@ def somatory(u: int, n: int,callback):
     return sum(values)
 
 
+def circle_collide(R1: float, pos1: vector,R2: float,pos2: vector):
+    D = abs(pos1 - pos2)
+
+    return R1+R2 >= D
+
+
+
+def rect_collide(pos1: vector, size1: vector,pos2: vector, size2: vector):
+    w,h,p = size1/2+(size2/2)
+
+    Dw,Dh,Dp = pos2-pos1
+
+    return abs(Dw) <= w and abs(Dh) <= h and abs(Dp) <= p
+    
+
+    
+
+

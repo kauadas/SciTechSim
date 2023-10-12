@@ -174,7 +174,7 @@ class Resistor(Component):
         self.terminal2.pos = (self.x+self.terminal2.size[0]*2,self.y+self.rect1.size[1]*0.4)
  
 
-
+# fonte
 class Source(Component):
     def __init__(self,name: str = None,**kwargs):
         super().__init__(**kwargs)
@@ -209,8 +209,6 @@ class Source(Component):
         self.terminal1.pos = (self.x,self.y+self.rect1.size[1])
         self.terminal2.size = (self.width*0.1,self.height*0.1)
         self.terminal2.pos = (self.x+self.rect1.size[0]-self.terminal2.size[0],self.y+self.rect1.size[1])
-
-  
 
 #led
 
@@ -264,7 +262,6 @@ class Led(Component):
         self.terminal1.pos = (self.x+self.rect1.size[0]*0.1,self.y-self.terminal2.size[1])
         self.terminal2.size = (self.width*0.1,self.height*0.2)
         self.terminal2.pos = (self.x+self.rect1.size[0]*0.9-self.terminal2.size[0],self.y-self.terminal2.size[1])
-
 
 # janela de criação de componentes
 class newComponent(Popup):

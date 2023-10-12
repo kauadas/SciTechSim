@@ -1,6 +1,12 @@
 from modules import physic
 
 from kivy.uix.widget import Widget
+from kivy.uix.popup import Popup
+from kivy.uix.label import Label
+from kivy.uix.textinput import TextInput
+from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.button import Button
+from kivy.uix.gridlayout import GridLayout
 from kivy.clock import Clock
 from kivy.graphics import *
 from math import degrees,atan
@@ -72,8 +78,36 @@ class body(Widget):
 
         
 
+class editAmbient(Popup):
+    def __init__(self,ambient: physic.ambient,**kwargs):
+        super().__init__(**kwargs)
 
-    
+        self.ambient = ambient
+
+        self.title = "ambient edit"
+        self.size_hint = (None,None)
+        self.size = (400,400)
+        self.mainLayout = BoxLayout()
+        self.inputs = GridLayout(cols=2,row_force_default=True, row_default_height=30)
+        self.label_g = Label(text="gravitacional constant = ",size_hint_x=None,width=100,font_size=10)
+        self.G = TextInput(multiline=False,size_hint_x=None,width=100,text=str(ambient.G),font_size=10,halign="center")
+        self.label_k = Label(text="electric constant =",size_hint_x=None,width=100,font_size=12.5)
+        self.k = TextInput(multiline=False,size_hint_x=None,width=100,text=str(ambient.K),font_size=10,halign="center")
+
+        self.add_widget(self.mainLayout)
+        self.mainLayout.add_widget(self.inputs)
+        self.inputs.add_widget(self.label_g)
+        self.inputs.add_widget(self.G)
+        self.inputs.add_widget(self.label_k)
+        self.inputs.add_widget(self.k)
+
+        self.ok = Button(text="OK",size_hint=(None,None),size=(50,100))
+        self.ok.on_press = self.dismiss
+        self.mainLayout.add_widget(self.ok)
+
+    def on_dismiss(self):
+        self.ambient.G = eval(self.G.text)
+        self.ambient.K = eval(self.k.text)
 
 class PhysicEditor(Widget):
     def __init__(self,**kwargs):
@@ -85,6 +119,13 @@ class PhysicEditor(Widget):
         self.ambient.G = kwargs.get("G",physic.G)
         self.ambient.K = kwargs.get("K",physic.K)
         
+        self.Button1 = Button(background_normal="./assets/config.png",size=(50,50),pos=self.pos,
+        font_size=10)
+        self.Button1.on_press = self.on_btn1
+        with self.Button1.canvas.after:
+            self.icon1 = Rectangle(size=self.Button1.size,source="./assets/config.png",pos=self.pos)
+        self.add_widget(self.Button1)
+
         with self.canvas:
             Color(68/255, 71/255, 90/255, 1.0)
             self.background = Rectangle()
@@ -93,11 +134,19 @@ class PhysicEditor(Widget):
         
 
     def update(self,*args):
+        
         self.background.pos = self.pos
         self.background.size = self.size
+        self.Button1.pos = (self.x-50,(self.y+self.height)-50)
+        self.icon1.pos = self.Button1.pos
+        
         print("pos",self.pos)
         for b in self.widgets.values():
             b.update()
+
+
+    def on_btn1(self,*args):
+        editAmbient(ambient=self.ambient).open()
 
     def add_body(self,body_: body):
         self.ambient.objects[body_.id] = body_.body
