@@ -109,6 +109,54 @@ class editAmbient(Popup):
         self.ambient.G = eval(self.G.text)
         self.ambient.K = eval(self.k.text)
 
+
+class createBody(Popup):
+    def __init__(self,editor,**kwargs):
+        super().__init__(**kwargs)
+
+        self.ambient = ambient
+
+        self.title = "ambient edit"
+        self.size_hint = (None,None)
+        self.size = (400,400)
+        self.mainLayout = BoxLayout()
+        self.inputs = GridLayout(cols=2,row_force_default=True, row_default_height=30)
+        self.label_m = Label(text="mass = ",size_hint_x=None,width=100,font_size=10)
+        self.m = TextInput(multiline=False,size_hint_x=None,width=100,text=str(0),font_size=10,halign="center")
+        self.label_name = Label(text="name = ",size_hint_x=None,width=100,font_size=10)
+        self.name = TextInput(multiline=False,size_hint_x=None,width=100,text=str(0),font_size=10,halign="center")
+        self.label_q = Label(text="charge =",size_hint_x=None,width=100,font_size=12.5)
+        self.q = TextInput(multiline=False,size_hint_x=None,width=100,text=str(0),font_size=10,halign="center")
+        self.label_size = Label(text="size =",size_hint_x=None,width=100,font_size=12.5)
+        self.nsize = TextInput(multiline=False,size_hint_x=None,width=100,text=str((10,10,10)),font_size=10,halign="center")
+        self.label_pos = Label(text="pos =",size_hint_x=None,width=100,font_size=12.5)
+        self.npos = TextInput(multiline=False,size_hint_x=None,width=100,text=str((0,0,0)),font_size=10,halign="center")
+
+        
+        self.add_widget(self.mainLayout)
+        self.mainLayout.add_widget(self.inputs)
+        self.inputs.add_widget(self.label_m)
+        self.inputs.add_widget(self.m)
+        self.inputs.add_widget(self.label_q)
+        self.inputs.add_widget(self.q)
+        self.inputs.add_widget(self.label_size)
+        self.inputs.add_widget(self.nsize)
+        elf.inputs.add_widget(self.label_pos)
+        self.inputs.add_widget(self.npos)
+        self.ok = Button(text="OK",size_hint=(None,None),size=(50,100))
+        self.ok.on_press = self.dismiss
+        self.mainLayout.add_widget(self.ok)
+
+    def on_dismiss(self):
+        body_json = {
+            "m": eval(self.m),
+            "Q": eval(self.q),
+            "size": [int(i) for i in self.nsize.split(',')],
+            "pos": [int(i) for i in self.npos.split(',')]
+        }
+        body = body()
+
+
 class PhysicEditor(Widget):
     def __init__(self,**kwargs):
         super().__init__(**kwargs)
@@ -119,12 +167,18 @@ class PhysicEditor(Widget):
         self.ambient.G = kwargs.get("G",physic.G)
         self.ambient.K = kwargs.get("K",physic.K)
         
-        self.Button1 = Button(background_normal="./assets/config.png",size=(50,50),pos=self.pos,
-        font_size=10)
+        self.buttons = GridLayout(cols=1,row_force_default=True, row_default_height=50)
+        self.Button1 = Button(text="edit ambient",width=50,pos=self.pos,
+        font_size=8)
         self.Button1.on_press = self.on_btn1
-        with self.Button1.canvas.after:
-            self.icon1 = Rectangle(size=self.Button1.size,source="./assets/config.png",pos=self.pos)
-        self.add_widget(self.Button1)
+        self.buttons.add_widget(self.Button1)
+        self.Button2 = Button(text="draw model",width=50,pos=self.pos,
+        font_size=8)
+        self.Button2.on_press = self.on_btn2
+        self.buttons.add_widget(self.Button2)
+        self.buttons.size_hint_x = None
+        self.buttons.width = 50
+        self.add_widget(self.buttons)
 
         with self.canvas:
             Color(68/255, 71/255, 90/255, 1.0)
@@ -137,8 +191,8 @@ class PhysicEditor(Widget):
         
         self.background.pos = self.pos
         self.background.size = self.size
-        self.Button1.pos = (self.x-50,(self.y+self.height)-50)
-        self.icon1.pos = self.Button1.pos
+        self.buttons.pos = (self.x-50,(self.y+self.height)-100)
+        
         
         print("pos",self.pos)
         for b in self.widgets.values():
@@ -147,6 +201,9 @@ class PhysicEditor(Widget):
 
     def on_btn1(self,*args):
         editAmbient(ambient=self.ambient).open()
+
+    def on_btn2(self,*args):
+        pass
 
     def add_body(self,body_: body):
         self.ambient.objects[body_.id] = body_.body
