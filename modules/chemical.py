@@ -1,3 +1,5 @@
+import periodictable
+
 
 #classe pai de todos os elementos
 class Element:
@@ -58,6 +60,7 @@ class Element:
 # tabela periodica
 
 
+
 # classe do hidrogenio
 class hidrogen(Element):
     def __init__(self):
@@ -78,9 +81,9 @@ class hidrogen(Element):
         self.electronegativity = 2.2
 
     def calculate_Nox(self):
-        self.Nox = +1
+        pass
 
-        
+# oxigenio
 class oxygen(Element):
     def __init__(self):
         super().__init__(
@@ -106,7 +109,7 @@ class oxygen(Element):
             if i[1].symbol == self.symbol:
                 self.Nox = 1
 
-        
+# carbono
 class carbon(Element):
     def __init__(self):
         super().__init__(
@@ -131,14 +134,49 @@ class carbon(Element):
 
         for i in self.connects:
             if i[1].symbol == "O":
-                self.Nox = +2
+                self.Nox += +2
 
             elif i[1].symbol == "H":
-                self.Nox = -4
-                
+                self.Nox += -4
+
+
+#cloro
+class chlorine(Element):
+    def __init__(self):
+        super().__init__(
+            symbol = "Cl",
+            name ="chlorine",
+            N=17,
+            Nox=+1
+        )
+
+        self.M = 35.5
+
+        self.period = 2
+
+        self.group = 14
+
+        self.free_eletrons = 5
+
+        self.electronegativity = 3.16
+
+    def calculate_Nox(self):
+
+        for i in self.connects:
+            if self.electronegativity > i[1].electronegativity:
+                self.Nox = i[1].Nox
+                i[1].Nox = abs(i[1].Nox)
+
+            else:
+                self.Nox = i[1].Nox
+                i[1].Nox = abs(i[1].Nox)
+
+
+
+
 class periodicTable:
     def __init__(self):
-        self.table = {"H": hidrogen,"O": oxygen,"C": carbon}
+        self.table = {"H": hidrogen,"O": oxygen,"C": carbon,"Cl": chlorine}
 
     def add_element(self,symbol: str,element: Element):
         self.table[symbol] = element
@@ -221,7 +259,7 @@ class molecule:
             if i.electronegativity > electronegativity:
                 i.Nox *= -1
 
-            print(i.Nox)
+            print(i.name,i.Nox)
 
             self.Nox += i.Nox
 

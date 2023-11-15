@@ -519,58 +519,43 @@ class CircuitEditor(Widget):
         self.project = kwargs.get("project")
         self.select = None
         self.size_hint = (None,None)
+        self.components = {}
         self.running = None
 
-        self.Button1 = Button(background_normal="./assets/add.png",size=(50,50),pos=self.pos,
+        self.Button1 = Button(text="add component",size=(100,50),pos=self.pos,
         font_size=10)
         self.Button1.on_press = self.on_btn1
-        with self.Button1.canvas.after:
-            self.icon1 = Rectangle(size=self.Button1.size,source="./assets/add.png",pos=self.pos)
         self.add_widget(self.Button1)
 
-        self.Button2 = Button(size=(50,50),pos=self.pos,
+        self.Button2 = Button(text="remove component",size=(100,50),pos=self.pos,
         font_size=10)
         self.Button2.on_press = self.remove_component
-        with self.Button2.canvas.after:
-            self.icon2 = Rectangle(size=self.Button2.size,source="./assets/remove.png",pos=self.Button2.pos)
-
         self.add_widget(self.Button2)
 
-        self.Button3 = Button(size=(50,50),pos=self.pos,
+        self.Button3 = Button(text="config component",size=(100,50),pos=self.pos,
         font_size=10)
         self.Button3.on_press = self.config_component
-        with self.Button3.canvas.after:
-            self.icon3 = Rectangle(size=self.Button3.size,source="./assets/config.png",pos=self.Button3.pos)
 
         self.add_widget(self.Button3)
 
-        self.Button4 = Button(size=(50,50),pos=self.pos,
+        self.Button4 = Button(text="run",size=(100,50),pos=self.pos,
         font_size=10)
         self.Button4.on_press = self.on_run
-        with self.Button4.canvas.after:
-            self.icon4 = Rectangle(size=self.Button4.size,source="./assets/play.png",pos=self.Button4.pos)
-
         self.add_widget(self.Button4)
 
-        self.Button5 = Button(size=(50,50),pos=self.pos,
+        self.Button5 = Button(text="rotate component",size=(100,50),pos=self.pos,
         font_size=10)
         self.Button5.on_press = self.rotate_btn
-        with self.Button5.canvas.after:
-            self.icon5 = Rectangle(size=self.Button5.size,source="./assets/rotate.png",pos=self.Button5.pos)
         self.add_widget(self.Button5)
 
-        self.Button6 = Button(size=(50,50),pos=self.pos,
+        self.Button6 = Button(text="save",size=(100,50),pos=self.pos,
         font_size=10)
         self.Button6.on_press = self.save
-        with self.Button6.canvas.after:
-            self.icon6 = Rectangle(size=self.Button6.size,source="./assets/rotate.png",pos=self.Button6.pos)
         self.add_widget(self.Button6)
 
-        self.Button7 = Button(size=(50,50),pos=self.pos,
+        self.Button7 = Button(text="load",size=(100,50),pos=self.pos,
         font_size=10)
         self.Button7.on_press = self.load_project
-        with self.Button7.canvas.after:
-            self.icon7 = Rectangle(size=self.Button7.size,source="./assets/rotate.png",pos=self.Button7.pos)
         self.add_widget(self.Button7)
         
         with self.canvas.before:
@@ -590,6 +575,11 @@ class CircuitEditor(Widget):
         print(self.project)
     
     def load_project(self):
+        
+        for i in self.components.copy().keys():
+            self.remove_widget(self.components.get(i))
+            self.components.pop(i)
+
         if self.project:
             self.pcbs = self.project.get("circuits")
             self.atual_pcb = list(self.pcbs.keys())[0]
@@ -630,19 +620,6 @@ class CircuitEditor(Widget):
         self.Button6.y = self.y+self.height-self.Button6.height-250
 
 
-        self.icon1.pos = self.Button1.pos
-
-        self.icon2.pos = self.Button2.pos
-
-        self.icon3.pos = self.Button3.pos
-
-        self.icon4.pos = self.Button4.pos
-
-        self.icon5.pos = self.Button5.pos
-
-        self.icon6.pos = self.Button6.pos
-        
-
         for i in self.components.values():
             i.x = self.x + i.circuit_pos[0]
             i.y = self.y + i.circuit_pos[1]
@@ -680,8 +657,7 @@ class CircuitEditor(Widget):
 
     def on_run(self,*args):
         if self.running:
-            self.icon4.source = "./assets/play.png"
-
+            
             self.running.cancel()
             self.running = None
 
@@ -695,7 +671,7 @@ class CircuitEditor(Widget):
             
 
         else:
-            self.icon4.source = "./assets/stop.png"
+            
             self.running = Clock.schedule_interval(self.run, 0.1)
 
 

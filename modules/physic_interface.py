@@ -9,11 +9,15 @@ from kivy.uix.button import Button
 from kivy.uix.gridlayout import GridLayout
 from kivy.clock import Clock
 from kivy.graphics import *
+from kivy.graphics.transformation import Matrix
 from math import degrees,atan
+
+
 
 class body(Widget):
     def __init__(self,obj_json,**kwargs):
         super().__init__(**kwargs)
+        self.json = obj_json
         self.id = obj_json.get("id")
 
         self.axis_render = 0
@@ -25,39 +29,16 @@ class body(Widget):
         
         self.pos = self.body.pos.values[:2]
 
-        self.scale = (0.175)/(self.body.pos[2]+0.175)
-        self.rot = Rotate()
-        self.rot.angle = 0
-        self.canvas.add(self.rot)
-        self.size = [x*self.scale for x in obj_json.get("size")[:2]]
+        self.scale = 1-(5/200*self.pos)
+
+        self.size = [i*self.scale for i in obj_json.get("size")[:2]]
         self.draw()
 
 
     def draw(self):
+        for i in self.matrix:
+            
         
-        for k,v in self.matrix_json.items():
-            if v.get('type') == "ellipse":
-                self.matrix[k] = Ellipse()
-                self.matrix[k].angle_start = v.get('angle_start',0)
-                self.matrix[k].angle_end = v.get('angle_end',360)
-                pos = [x+y for x,y in zip(self.pos,v.get('pos',[0,0,0])[:2])]
-                print(pos)
-                self.matrix[k].pos = pos
-                self.matrix[k].size = v.get("size",(5,5,5))[:2]
-                
-                print(self.matrix[k].pos)
-
-            elif v.get('type') == "rectangle":
-                self.matrix[k] = Rectangle()
-                pos = [x+y for x,y in zip(self.pos,v.get('pos',[0,0,0])[:2])]
-                print(pos)
-                self.matrix[k].pos = pos
-                self.matrix[k].size = v.get("size",(5,5,5))[:2]
-                
-                print(self.matrix[k].pos)
-
-            self.canvas.add(Color(*v.get("color",[1,1,1,1])))
-            self.canvas.add(self.matrix[k])
     
 
     
@@ -67,14 +48,6 @@ class body(Widget):
         self.x = self.body.pos.values[0] + self.parent.x
         self.y = self.body.pos.values[1] + self.parent.y
         print("x",self.x)
-
-
-        self.rot.origin = self.center
-        self.rot.angle = self.body.angle[self.axis_render]
-        for k,v in self.matrix.items():
-            x,y,z = self.matrix_json[k].get('pos',[0,0,0])
-            v.pos = self.x + x,self.y + y
-            print(v)
 
         
 
@@ -101,7 +74,7 @@ class editAmbient(Popup):
         self.inputs.add_widget(self.label_k)
         self.inputs.add_widget(self.k)
 
-        self.ok = Button(text="OK",size_hint=(None,None),size=(50,100))
+        self.ok = Button(text="OK",size_hint=(None,None),size=(50,50))
         self.ok.on_press = self.dismiss
         self.mainLayout.add_widget(self.ok)
 
@@ -114,9 +87,10 @@ class createBody(Popup):
     def __init__(self,editor,**kwargs):
         super().__init__(**kwargs)
 
-        self.ambient = ambient
+        self.ambient = editor.ambient
 
-        self.title = "ambient edit"
+        self.editor = editor
+        self.title = "new body"
         self.size_hint = (None,None)
         self.size = (400,400)
         self.mainLayout = BoxLayout()
@@ -141,38 +115,37 @@ class createBody(Popup):
         self.inputs.add_widget(self.q)
         self.inputs.add_widget(self.label_size)
         self.inputs.add_widget(self.nsize)
-        elf.inputs.add_widget(self.label_pos)
+        self.inputs.add_widget(self.label_pos)
         self.inputs.add_widget(self.npos)
-        self.ok = Button(text="OK",size_hint=(None,None),size=(50,100))
+        self.ok = Button(text="OK",size_hint=(None,None),size=(50,50))
         self.ok.on_press = self.dismiss
         self.mainLayout.add_widget(self.ok)
 
     def on_dismiss(self):
         body_json = {
-            "m": eval(self.m),
-            "Q": eval(self.q),
-            "size": [int(i) for i in self.nsize.split(',')],
-            "pos": [int(i) for i in self.npos.split(',')]
+            "m": eval(self.m.text),
+            "Q": eval(self.q.text),
+            "size": eval(self.nsize.text),
+            "pos": eval(self.npos.text)
         }
-        body = body()
+        body_var = body(body_json)
+        self.editor.add_body(body_var)
 
 
 class PhysicEditor(Widget):
-    def __init__(self,**kwargs):
+    def __init__(self,project,**kwargs):
         super().__init__(**kwargs)
 
-        self.run_state = None
         self.ambient = physic.ambient()
-        self.widgets = {}
-        self.ambient.G = kwargs.get("G",physic.G)
-        self.ambient.K = kwargs.get("K",physic.K)
-        
+        self.project = project
+        self.run_state = None
+        self.load_project()
         self.buttons = GridLayout(cols=1,row_force_default=True, row_default_height=50)
         self.Button1 = Button(text="edit ambient",width=50,pos=self.pos,
         font_size=8)
         self.Button1.on_press = self.on_btn1
         self.buttons.add_widget(self.Button1)
-        self.Button2 = Button(text="draw model",width=50,pos=self.pos,
+        self.Button2 = Button(text="new body",width=50,pos=self.pos,
         font_size=8)
         self.Button2.on_press = self.on_btn2
         self.buttons.add_widget(self.Button2)
@@ -203,7 +176,8 @@ class PhysicEditor(Widget):
         editAmbient(ambient=self.ambient).open()
 
     def on_btn2(self,*args):
-        pass
+        obj_creator = createBody(self)
+        obj_creator.open()
 
     def add_body(self,body_: body):
         self.ambient.objects[body_.id] = body_.body
@@ -214,6 +188,32 @@ class PhysicEditor(Widget):
         self.ambient.objects.pop(body_.id)
         self.widgets.pop(body_.id)
         self.remove_widget(body_)
+
+    def load_project(self):
+        
+        for i in self.ambient.objects.copy().keys():
+            self.remove_body(i)
+        self.ambient = physic.ambient()
+        
+        
+
+        self.widgets = {}
+
+        if self.project != None:
+            self.ambient_project = self.project.get("ambients")
+            self.ambient.G = self.ambient_project.get("G",physic.G)
+            self.ambient.K = self.ambient_project.get("K",physic.K)
+            for b in self.ambient_project.get("bodys").values():
+                nb = body(b)
+                self.add_body(nb)
+
+        else:
+            self.ambient.G = physic.G
+            self.ambient.K = physic.K
+
+    def save_project(self):
+        pass
+
 
     def run(self,*args):
         self.ambient.upgrade()

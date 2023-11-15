@@ -196,7 +196,7 @@ class action_bar(BoxLayout):
 
         self.home.on_press = lambda *args: self.trocar_tela("home")
 
-        self.main = Button(text="Main",size_hint=(None,1),width=50,
+        self.main = Button(text="Physic",size_hint=(None,1),width=50,
                            background_color=(0,0,0,0))
         self.main.on_press = lambda *args: self.trocar_tela("physiceditor")
 
@@ -319,7 +319,7 @@ class physicEditor(Screen):
 
         self.actionbar = action_bar()
 
-        self.physic_editor = PhysicEditor()
+        self.physic_editor = PhysicEditor(project=project)
         self.physic_editor.size_hint = (0.5,0.6)
         self.physic_editor.pos_hint = {
             "center_x": 0.5,

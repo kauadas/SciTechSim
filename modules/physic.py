@@ -43,9 +43,7 @@ class body:
 
 
     def upgrade(self):
-        fric_total = [vector(*i.get("fric",0)) for i in self.matrix.values()]
-        self.fric = sum(fric_total,start=vector(0,0,0))/len(fric_total)
-        print("fric",self.fric)
+        
             
         if self.m != 0:
             self.a = sum(list(self.resultant_forces.values()),start=vector(*[0 for i in self.pos]))/self.m

@@ -4,9 +4,10 @@ import os
 class project:
     def __init__(self,_dir: str):
         self.base = {
-                "model": {},
+                "ambients": {"0": {
+                    "bodys": {}
+                }},
                 "circuits": {"0": {}},
-                "quantic": {},
                 "chemical": {},
                 "files": []
             }
