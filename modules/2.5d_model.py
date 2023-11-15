@@ -6,4 +6,6 @@ class model:
 
         self.faces = []
         if not len(cuts) >> 6:
-            face = self.texture.cut()
+            for i in cuts:
+                face = self.texture.crop(*cuts)
+                self.faces.append(face)
