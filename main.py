@@ -1,5 +1,6 @@
 from kivy.app import App
 
+import json
 from kivy.uix.screenmanager import Screen,ScreenManager
 from kivy.uix.anchorlayout import AnchorLayout
 from kivy.uix.floatlayout import FloatLayout
@@ -20,7 +21,6 @@ from pathlib import Path
 
 project = None
 
-
 def load_project(_dir: list):
     global project
     print("loading project",_dir)
@@ -32,7 +32,8 @@ def load_project(_dir: list):
 class screenManager0(ScreenManager):
     def __init__(self,**kwargs):
         super().__init__(**kwargs)
-
+        
+        self.add_widget(InitialProject())
         self.add_widget(home())
         self.add_widget(pcbEditor())
         self.add_widget(physicEditor())
@@ -256,6 +257,7 @@ class home(Screen):
         self.bind(size=self.on_resize)
 
         self.add_widget(self.actionbar)
+
         
 
     def on_resize(self,w,size):
@@ -309,7 +311,27 @@ class pcbEditor(Screen):
         
         self.actionbar.pos = (0,self.size[1]-20)
 
+class InitialProject(Screen):
+    def __init__(self,**kwargs):
+        super().__init__(**kwargs)
+
+        self.name = "initial_Project"
+
+        with open("settings/projects.json") as project_file:
+            project = project_file.read()
+            project = json.loads(project)
+
+        projects = list(project.keys())
+
         
+
+        with self.canvas.before:
+           Color(40/255, 42/255, 54/255,1)
+           self.rect0 = Rectangle(size=(50,50),pos=(0,0))
+           self.bind(size=self.upgrade,pos=self.upgrade)
+
+    def upgrade(self,*args):
+        self.rect0.size = self.size
 
 class physicEditor(Screen):
     def __init__(self,**kwargs):
@@ -357,6 +379,8 @@ class SciTechSim(App):
         self.title = "simulador de física,química e essas porra tudo do kua super pika 2099"
         
         return screenManager0()
+
+    
 
 if __name__ == "__main__":
     SciTechSim().run()

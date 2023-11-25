@@ -37,7 +37,7 @@ class body(Widget):
 
     def draw(self):
         for i in self.matrix:
-            
+            pass
         
     
 

@@ -2,6 +2,7 @@ from kivy.uix.widget import Widget
 from kivy.uix.image import Image
 from kivy.lang import Builder
 from kivy.uix.stacklayout import StackLayout
+from kivy.uix.gridlayout import GridLayout
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.button import Button
 from kivy.uix.label import Label
@@ -392,6 +393,7 @@ class config_component(Popup):
             layout.add_widget(self.V)
             layout.add_widget(self.I)
             layout.add_widget(self.Hz)
+            layout.add_widget(self.status)
 
         layout.add_widget(self.ok)
         layout.add_widget(self.connect)
@@ -512,6 +514,56 @@ class config_connections(Popup):
 
         self.dismiss()
 
+
+class ChooseCircuit(Popup):
+    def __init__(self,circuit_editor,**kwargs):
+        super().__init__(**kwargs)
+        self.title = "choose circuit"
+        self.layout = StackLayout(orientation="lr-tb")
+        self.circuits = DropDown()
+        self.Open = Button(text="select",on_press = 
+        lambda *args: self.layout.add_widget(self.circuits),size_hint=(1,None),height=40)
+
+        for i in circuit_editor.pcbs.keys():
+            print(i)
+            opt = Button(text=i,on_press=
+            lambda *args,d=i: self.circuits.select(d),size_hint_y=None,height=40)
+
+            self.circuits.add_widget(opt)
+
+        new = Button(text="new",on_press=
+        lambda *args: self.circuits.select("new"),size_hint_y=None,height=40)
+
+        self.circuits.add_widget(new)
+
+        
+
+        self.circuits.on_select = self.select
+        self.layout.add_widget(self.Open)
+        self.add_widget(self.layout)
+
+        self.circuit = circuit_editor
+
+    def select(self,data):
+        print(data)
+        if data != "new":
+            self.circuit.save()
+            self.circuit.atual_pcb = data
+            self.circuit.load_project()
+            
+
+        else:
+            x = str(int(list(self.circuit.pcbs.keys())[-1])+1)
+            self.circuit.pcbs[x] = {}
+            self.circuit.save()
+            self.circuit.atual_pcb = x
+            self.circuit.load_project()
+            
+
+        self.circuit.set_circuit.text = self.circuit.atual_pcb
+        self.dismiss()
+
+
 # widget editor de circuito
 class CircuitEditor(Widget):
     def __init__(self, **kwargs):
@@ -519,45 +571,55 @@ class CircuitEditor(Widget):
         self.project = kwargs.get("project")
         self.select = None
         self.size_hint = (None,None)
+        self.atual_pcb = "0"
         self.components = {}
+        self.reload_all = True
         self.running = None
 
-        self.Button1 = Button(text="add component",size=(100,50),pos=self.pos,
+
+        self.buttons = GridLayout(cols=1,size_hint=(None,None),size=(100,self.height))
+        self.set_circuit = Button(text=self.atual_pcb,size=(100,50),
+        font_size=10)
+        self.set_circuit.on_press = self.on_set_circuit
+        self.buttons.add_widget(self.set_circuit)
+
+        self.Button1 = Button(text="add component",size=(100,50),
         font_size=10)
         self.Button1.on_press = self.on_btn1
-        self.add_widget(self.Button1)
+        self.buttons.add_widget(self.Button1)
 
-        self.Button2 = Button(text="remove component",size=(100,50),pos=self.pos,
+        self.Button2 = Button(text="remove component",size=(100,50),
         font_size=10)
         self.Button2.on_press = self.remove_component
-        self.add_widget(self.Button2)
+        self.buttons.add_widget(self.Button2)
 
-        self.Button3 = Button(text="config component",size=(100,50),pos=self.pos,
+        self.Button3 = Button(text="config component",size=(100,50),
         font_size=10)
         self.Button3.on_press = self.config_component
 
-        self.add_widget(self.Button3)
+        self.buttons.add_widget(self.Button3)
 
-        self.Button4 = Button(text="run",size=(100,50),pos=self.pos,
+        self.Button4 = Button(text="run",size=(100,50),
         font_size=10)
         self.Button4.on_press = self.on_run
-        self.add_widget(self.Button4)
+        self.buttons.add_widget(self.Button4)
 
-        self.Button5 = Button(text="rotate component",size=(100,50),pos=self.pos,
+        self.Button5 = Button(text="rotate component",size=(100,50),
         font_size=10)
         self.Button5.on_press = self.rotate_btn
-        self.add_widget(self.Button5)
+        self.buttons.add_widget(self.Button5)
 
-        self.Button6 = Button(text="save",size=(100,50),pos=self.pos,
+        self.Button6 = Button(text="save",size=(100,50),
         font_size=10)
         self.Button6.on_press = self.save
-        self.add_widget(self.Button6)
+        self.buttons.add_widget(self.Button6)
 
-        self.Button7 = Button(text="load",size=(100,50),pos=self.pos,
+        self.Button7 = Button(text="load",size=(100,50),
         font_size=10)
         self.Button7.on_press = self.load_project
-        self.add_widget(self.Button7)
+        self.buttons.add_widget(self.Button7)
         
+        self.add_widget(self.buttons)
         with self.canvas.before:
             Color(68/255, 71/255, 90/255, 1.0)
             self.rect = Rectangle(pos=self.pos,size=self.size)
@@ -582,13 +644,13 @@ class CircuitEditor(Widget):
 
         if self.project:
             self.pcbs = self.project.get("circuits")
-            self.atual_pcb = list(self.pcbs.keys())[0]
+            print(self.pcbs)
             for c in json_to_pcb(self.pcbs[self.atual_pcb]).values():
                 self.add_component(c)
             
             
         else:
-            self.pcbs = {}
+            self.pcbs = {"0": {}}
             self.components = {}
             self.atual_pcb = "0"
 
@@ -599,25 +661,11 @@ class CircuitEditor(Widget):
 
         self.rect.size = self.size
 
-        self.Button1.x = self.x-self.Button1.width
-        self.Button1.y = self.y+self.height-self.Button1.height
+        self.buttons.x = self.x-self.buttons.width
+        self.buttons.y = self.y
+        self.buttons.size = (100,self.height)
 
         
-
-        self.Button2.x = self.x-self.Button2.width
-        self.Button2.y = self.y+self.height-self.Button2.height-50
-
-        self.Button3.x = self.x-self.Button3.width
-        self.Button3.y = self.y+self.height-self.Button3.height-100
-
-        self.Button4.x = self.x-self.Button4.width
-        self.Button4.y = self.y+self.height-self.Button4.height-200
-
-        self.Button5.x = self.x-self.Button5.width
-        self.Button5.y = self.y+self.height-self.Button4.height-150
-
-        self.Button6.x = self.x-self.Button6.width
-        self.Button6.y = self.y+self.height-self.Button6.height-250
 
 
         for i in self.components.values():
@@ -673,6 +721,9 @@ class CircuitEditor(Widget):
         else:
             
             self.running = Clock.schedule_interval(self.run, 0.1)
+
+    def on_set_circuit(self,*args):
+        ChooseCircuit(circuit_editor=self).open()
 
 
 def pcb_to_json(pcb: dict):
