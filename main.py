@@ -333,12 +333,16 @@ class InitialProject(Screen):
         projects = list(self.project.keys())
 
         self.projects = GridLayout(cols=1,size_hint=(None,None))
+        self.else_project = Label(text="no projects found.",size_hint=(None,None))
         if len(projects) > 0:
             for i in projects[0:4]:
                 but = Button(text=i,size_hint_y=None,height=40)
                 but.on_press = lambda *args,k=i: self.set_project(k)
                 but.background_color = rgb(*theme["action-bar"])+[1]
                 self.projects.add_widget(but)
+
+        else:
+            self.add_widget(self.else_project)
 
 
         self.add_widget(self.projects)
@@ -360,10 +364,13 @@ class InitialProject(Screen):
         self.rect0.size = self.size
         self.rect1.size = [self.width*0.4,self.height*0.4]
         self.projects.size = self.rect1.size
+        self.else_project.size = self.rect1.size
         self.rect1.pos = [self.width/2-self.rect1.size[0]/2,self.height/2-self.rect1.size[1]/2]
         self.projects.pos = self.rect1.pos
+        self.else_project.pos = self.rect1.pos
         self.other.pos = [self.rect1.pos[0]+self.rect1.size[0]-self.other.width,self.rect1.pos[1]]
         self.other.on_press = self.on_other
+        
 
     def on_other(self,*args):
         file=fileSelector(_type=[".json"],callback=self.callback)
