@@ -5,6 +5,7 @@ from kivy.uix.screenmanager import Screen,ScreenManager
 from kivy.uix.anchorlayout import AnchorLayout
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.gridlayout import GridLayout
 from kivy.uix.button import Button
 from kivy.uix.popup import Popup
 from kivy.uix.label import Label
@@ -19,7 +20,15 @@ from modules.physic_interface import PhysicEditor
 from modules import project_file
 from pathlib import Path
 
+with open("settings/theme.json") as theme_file:
+    theme = json.loads(theme_file.read())
+    theme_file.close()
+
 project = None
+
+def rgb(*args):
+    x = [i/255 for i in args]
+    return x
 
 def load_project(_dir: list):
     global project
@@ -219,7 +228,7 @@ class action_bar(BoxLayout):
         self.add_widget(self.pcb)
 
         with self.canvas.before:
-            Color(68/255, 71/255, 90/255, 1.0)
+            Color(*rgb(*theme["action-bar"])+[1])
             self.rect = Rectangle(size=(9999,20),pos=(0,0))
 
         self.bind(size=self.update_size,pos=self.update_pos)
@@ -247,7 +256,7 @@ class home(Screen):
         self.actionbar = action_bar()
         
         with self.canvas.before:
-           Color(40/255, 42/255, 54/255,1)
+           Color(*rgb(*theme["background-color"])+[1])
            self.rect0 = Rectangle(size=(50,50),pos=(0,0))
            
 
@@ -292,7 +301,7 @@ class pcbEditor(Screen):
 
 
         with self.canvas.before:
-           Color(40/255, 42/255, 54/255,1)
+           Color(*rgb(*theme["background-color"])+[1])
            self.rect0 = Rectangle(size=(50,50),pos=(0,0))
            
 
@@ -318,20 +327,63 @@ class InitialProject(Screen):
         self.name = "initial_Project"
 
         with open("settings/projects.json") as project_file:
-            project = project_file.read()
-            project = json.loads(project)
+            self.project = project_file.read()
+            self.project = json.loads(self.project)
 
-        projects = list(project.keys())
+        projects = list(self.project.keys())
 
-        
+        self.projects = GridLayout(cols=1,size_hint=(None,None))
+        if len(projects) > 0:
+            for i in projects[0:4]:
+                but = Button(text=i,size_hint_y=None,height=40)
+                but.on_press = lambda *args,k=i: self.set_project(k)
+                but.background_color = rgb(*theme["action-bar"])+[1]
+                self.projects.add_widget(but)
 
+
+        self.add_widget(self.projects)
+
+    
         with self.canvas.before:
-           Color(40/255, 42/255, 54/255,1)
+           Color(*rgb(*theme["background-color"])+[1])
            self.rect0 = Rectangle(size=(50,50),pos=(0,0))
-           self.bind(size=self.upgrade,pos=self.upgrade)
+           Color(*rgb(*theme["secundary-color"])+[1])
+           self.rect1 = Rectangle(size=(50,50),pos=(0,0))
+
+        self.other = Button(text="other",size_hint=(None,None),size=(100,50))
+        self.other.background_color = rgb(*theme["action-bar"])+[1]
+        self.add_widget(self.other)
+
+        self.bind(size=self.upgrade,pos=self.upgrade)
 
     def upgrade(self,*args):
         self.rect0.size = self.size
+        self.rect1.size = [self.width*0.4,self.height*0.4]
+        self.projects.size = self.rect1.size
+        self.rect1.pos = [self.width/2-self.rect1.size[0]/2,self.height/2-self.rect1.size[1]/2]
+        self.projects.pos = self.rect1.pos
+        self.other.pos = [self.rect1.pos[0]+self.rect1.size[0]-self.other.width,self.rect1.pos[1]]
+        self.other.on_press = self.on_other
+
+    def on_other(self,*args):
+        file=fileSelector(_type=[".json"],callback=self.callback)
+        proj = Path.name
+        file.open()
+    
+    def set_project(self,k):
+        load_project([self.project[k]])
+        App.get_running_app().root.current = "home"
+
+    def callback(self,_dir):
+        load_project(_dir)
+        proj = Path(_dir[0]).name
+        self.project[proj] = _dir[0]
+        with open("settings/projects.json","w") as proj_file:
+            proj_file.write(json.dumps(self.project))
+            proj_file.close()
+
+        App.get_running_app().root.current = "home"
+        
 
 class physicEditor(Screen):
     def __init__(self,**kwargs):
@@ -353,7 +405,7 @@ class physicEditor(Screen):
 
 
         with self.canvas.before:
-           Color(40/255, 42/255, 54/255,1)
+           Color(*rgb(*theme["background-color"])+[1])
            self.rect0 = Rectangle(size=(50,50),pos=(0,0))
            
 

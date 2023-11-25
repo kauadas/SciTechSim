@@ -69,20 +69,20 @@ class Component(Widget):
         self.rot.angle = self.angle
 
         p = self.parent
-        
-        if self.x < p.x:
-            self.x = p.x
+        if p:
+            if self.x < p.x:
+                self.x = p.x
 
-        elif self.x > p.right:
-            self.x = p.right-self.width
+            elif self.x > p.right:
+                self.x = p.right-self.width
 
-        
+            
 
-        if self.y < p.y:
-            self.y = p.y
+            if self.y < p.y:
+                self.y = p.y
 
-        elif self.y > p.top:
-            self.y = p.top-self.height
+            elif self.y > p.top:
+                self.y = p.top-self.height
 
 
 
@@ -370,7 +370,8 @@ class config_component(Popup):
         self.V = TextInput(hint_text="voltage",multiline=False,size_hint_y=None,height=40)
         self.I = TextInput(hint_text="current",multiline=False,size_hint_y=None,height=40)
         self.Hz = TextInput(hint_text="frequency in hz",multiline=False,size_hint_y=None,height=40)
-        self.status = Label(text=f'is break? {self.component.component.is_break}')
+        self.status = Label(text=f'is break? {self.component.component.is_break}',size_hint_y=None,
+        height=40)
 
 
         self.ok = Button(text="ok",size_hint_y=None,height=40)
@@ -393,8 +394,8 @@ class config_component(Popup):
             layout.add_widget(self.V)
             layout.add_widget(self.I)
             layout.add_widget(self.Hz)
-            layout.add_widget(self.status)
-
+            
+        layout.add_widget(self.status)
         layout.add_widget(self.ok)
         layout.add_widget(self.connect)
 
@@ -762,6 +763,7 @@ def pcb_to_json(pcb: dict):
 
         components[name]["connections"] = connections
         components[name]['pos'] = component.circuit_pos
+        components[name]['angle'] = component.angle
         components[name]['size'] = component.width
 
     print(components)
@@ -773,22 +775,22 @@ def json_to_pcb(json: dict):
     for name, component in json.items():
         print(name)
         if component["type"] == "resistor":
-            size = component["size"]
-            obj = Resistor(name=name,pos=component["pos"],size=(size,size))
+            
+            obj = Resistor(name=name,pos=[0,0],size=[0,0])
             obj.component.r = component["r"]
             x[name] = obj
 
         elif component["type"] == "source":
             
-            size = component["size"]
-            obj = Source(name=name,pos=component["pos"],size=(size,size))
+            
+            obj = Source(name=name)
             obj.component.V = component["V"]
             obj.component.I = component["I"]
             x[name] = obj
 
         elif component["type"] == "led":
-            size = component["size"]
-            obj = Led(name=name,pos=component["pos"],size=(size,size))
+            
+            obj = Led(name=name,pos=[0,0],size=[0,0])
             obj.component.r = component["r"]
             obj.component.color = component["color"]
             obj.component.off_color = component["off_color"]
@@ -797,9 +799,14 @@ def json_to_pcb(json: dict):
             x[name] = obj
 
         elif component["type"] == "multimeter":
-            size = component["size"]
-            obj = Multimeter(name=name,pos=component["pos"],size=(size,size))
+            
+            obj = Multimeter(name=name,pos=[0,0],size=[0,0])
             x[name] = obj
+
+        size = component["size"]
+        obj.circuit_pos = component["pos"]
+        obj.size= size,size
+        obj.rotate(component['angle'])
 
     for name, component in json.items():
         c1 = x[name].component
