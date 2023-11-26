@@ -228,7 +228,7 @@ class action_bar(BoxLayout):
         self.add_widget(self.pcb)
 
         with self.canvas.before:
-            Color(*rgb(*theme["action-bar"])+[1])
+            Color(*rgb(*theme["34"])+[1])
             self.rect = Rectangle(size=(9999,20),pos=(0,0))
 
         self.bind(size=self.update_size,pos=self.update_pos)
@@ -338,7 +338,7 @@ class InitialProject(Screen):
             for i in projects[0:4]:
                 but = Button(text=i,size_hint_y=None,height=40)
                 but.on_press = lambda *args,k=i: self.set_project(k)
-                but.background_color = rgb(*theme["action-bar"])+[1]
+                but.background_color = rgb(*theme["34"])+[1]
                 self.projects.add_widget(but)
 
         else:
@@ -355,7 +355,7 @@ class InitialProject(Screen):
            self.rect1 = Rectangle(size=(50,50),pos=(0,0))
 
         self.other = Button(text="other",size_hint=(None,None),size=(100,50))
-        self.other.background_color = rgb(*theme["action-bar"])+[1]
+        self.other.background_color = rgb(*theme["34"])+[1]
         self.add_widget(self.other)
 
         self.bind(size=self.upgrade,pos=self.upgrade)
@@ -386,7 +386,7 @@ class InitialProject(Screen):
         proj = Path(_dir[0]).name
         self.project[proj] = _dir[0]
         with open("settings/projects.json","w") as proj_file:
-            proj_file.write(json.dumps(self.project))
+            proj_file.write(json.dumps(self.project,indent=4))
             proj_file.close()
 
         App.get_running_app().root.current = "home"

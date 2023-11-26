@@ -15,9 +15,20 @@ from kivy.clock import Clock
 from kivy.properties import NumericProperty
 from modules import eletronic
 import math
+import json
 
 wires = 0
 # classe pai dos componentes qualquer modificação aqui altera todos os componentes tambem.
+
+
+with open("settings/theme.json") as theme_file:
+    theme = json.loads(theme_file.read())
+    theme_file.close()
+
+def rgb(*args):
+    x = [i/255 for i in args]
+    return x
+
 
 class Component(Widget):
     def __init__(self, **kwargs):
@@ -622,7 +633,7 @@ class CircuitEditor(Widget):
         
         self.add_widget(self.buttons)
         with self.canvas.before:
-            Color(68/255, 71/255, 90/255, 1.0)
+            Color(*rgb(*theme['34'])+[1.0])
             self.rect = Rectangle(pos=self.pos,size=self.size)
 
         
