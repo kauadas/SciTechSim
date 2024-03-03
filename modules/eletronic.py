@@ -209,6 +209,9 @@ class Led(component):
                 else:
                     self.is_break = True
 
+        def set_color(self,color: list):
+            self.color = color+[255]
+            self.off_color = [i/2 for i in self.color]
                 
 
                 

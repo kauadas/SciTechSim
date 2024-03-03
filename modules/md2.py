@@ -1,46 +1,71 @@
-from PIL import Image
+import json
 
-class model:
-    def __init__(self,texture: str = None,cuts: list = None):
-        if texture:
-            self.texture = texture
+def to_tuple(X: str):
 
-        if cuts:
-            self.cuts = cuts
+    if "(" in X:
+        X = X.replace("(","").replace(")","")
+        X = X.split(",")
+        Y = []
+        for i in X:
+            Y.append(int(i))
 
-        if texture and cuts:
-            self.load()
+        return Y
+    
+    else:
+        return int(X)
 
-    def save(self,name):
-        with open(name+".md2","w") as md2:
-            data = self.texture + "\n"
-            for i in self.cuts:
-                data += ",".join([str(x) for x in i])+"\n"
 
-            md2.write(data)
-            md2.close()
-                
-    def load(self,file: str = None):
-        if file:
-            with open(file) as md2:
-                file = md2.read()
-                filef = file.split("\n")
-                self.texture = filef[0]
-                self.texture_img = Image.open(self.texture)
-                self.faces = {}
-                for i in filef[1:]:
-                    if i != '':
-                        x = [int(c) for c in i.split(",")]
-                        face = self.texture_img.crop(x[4:])
-                        self.faces[f"{x[0]}E{x[1]}"] = [x[2],x[4],face]
+class Model:
+    def __init__(self,faces = 6,facemap: dict = {}) -> None:
+        self.objs = [[] for i in range(faces)]
+        self.facemap = facemap
 
-        else:
-            self.texture_img = Image.open(self.texture)
-            
-            self.faces = {}
-            if not len(self.cuts) >> 6:
-                for i in self.cuts:
-                    face = self.texture_img.crop(i[4:])
-                    self.faces[f"{i[0]}E{i[1]}"] = face
+    def Circle(self,pos: tuple,radius: int, color: tuple,face: int = 0) -> None: 
+        self.objs[face].append({
+            "type": "Circle",
+            "pos": pos,
+            "radius": radius,
+            "color": color,
+            "face": face
+        })
 
- 
+
+    def Line(self,pos: tuple,pos2: tuple, color: tuple,face: int = 0) -> None:
+        self.objs[face].append({
+            "type": "Line",
+            "pos": pos,
+            "pos2": pos2,
+            "color": color,
+            "face": face
+        })
+
+    
+
+    def save(self,file: str):
+        data = ""
+
+        for i in self.objs:
+            for c in i:
+                data += "!".join(list([str(i) for i in c.values()])) + "\n"
+
+        with open(file+".md2","w") as save:
+            save.write(f"{len(self.objs)}!{self.facemap} \n"+data)
+            save.close()
+
+    def load(self,file: str):
+        with open(file) as data:
+            txt = data.read()
+            data.close()
+
+        txt = txt.split("\n")
+        line0 = txt[0].split("!")
+        self.objs = [[] for i in range(int(line0[0]))]
+        self.facemap = json.loads(line0[1])
+        for i in txt[1::]:
+            line = i.split("!")
+
+            if line[0] == 'Line':
+                self.Line(*[to_tuple(x) for x in line[1::]])
+
+            if line[0] == 'Circle':
+                self.Circle(*[to_tuple(x) for x in line[1::]])
