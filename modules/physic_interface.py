@@ -32,7 +32,11 @@ class body(Widget):
         
         self.pos = self.body.pos.values[:2]
 
-        self.scale = 1-((5/200)*self.body.pos.values[2])
+        if self.body.pos.values[2] != 0:
+            self.scale = ((12/self.body.pos.values[2]))
+
+        else:
+            self.scale = 1
 
         self.size = [abs(i*self.scale*100) for i in obj_json.get("size")[:2]]
 
@@ -44,12 +48,11 @@ class body(Widget):
         Color(1,0,0,0)
         self.rt = Rectangle(size=self.size,pos=self.pos)
         for i in self.md.objs[0]:
-            if i.get('type') == 'Circle':
-                Color(*[abs(x/255*(1-self.body.pos.values[2]/100)) for x in i.get('color')])
+            Color(*[abs(x/255*(self.scale)) for x in i.get('color')])
+            if i.get('type') == 'Circle':             
                 Ellipse(size=(i.get('radius')*self.size[0],i.get('radius')*self.size[0]),pos=[(x*z)+y  for x,y,z in zip(i.get('pos'),self.pos,self.size)])
                 
             elif i.get('type') == 'Rectangle':
-                Color(*[x/255*(1-self.body.pos.values[2]/100) for x in i.get('color')])
                 Rectangle(size=(i.get('size')[0]*self.size[0],i.get('size')[1]*self.size[1]),pos=[(x*z)+y for x,y,z in zip(i.get('pos'),self.pos,self.size)])
                 
 
