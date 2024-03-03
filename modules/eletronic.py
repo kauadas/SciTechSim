@@ -324,13 +324,13 @@ class Pic(component):
 
 class picCompiler:
     def __init__(self,pic: Pic,code: str):
-        low = 0
-        high = 5
+        self.low = 0
+        self.high = 5
         self.pic = pic
         self.code = code
 
     def digital_write(self,port: int,value: int):
-        self.pic.get_terminal(port).set(v=hight)
+        self.pic.get_terminal(port).set(v=value)
 
 class Capacitor(component):
     def __init__(self,**kwargs):
