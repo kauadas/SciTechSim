@@ -25,7 +25,6 @@ class body(Widget):
         self.matrix_json = obj_json.get("matrix",{})
         self.md = Model()
         self.md.load(md2)
-        self.canvas_list = []
         self.matrix = {}
         
         self.body = physic.body(id=self.id,m=obj_json.get("m",0),Q=obj_json.get("Q",0),pos=obj_json.get("pos"),
@@ -35,20 +34,24 @@ class body(Widget):
 
         self.scale = 1-((5/200)*self.body.pos.values[2])
 
-        self.size = [i*self.scale for i in obj_json.get("size")[:2]]
+        self.size = [abs(i*self.scale*100) for i in obj_json.get("size")[:2]]
 
         with self.canvas:
             self.draw()
 
 
     def draw(self):
+        Color(1,0,0,0)
+        self.rt = Rectangle(size=self.size,pos=self.pos)
         for i in self.md.objs[0]:
             if i.get('type') == 'Circle':
-                Color(*[x/255 for x in i.get('color')])
-                x=Ellipse(size=(i.get('radius')*self.scale,i.get('radius')*self.scale),pos=[x+y for x,y in zip(i.get('pos'),self.pos)])
-                self.canvas_list.append((x,i))
-
-
+                Color(*[abs(x/255*(1-self.body.pos.values[2]/100)) for x in i.get('color')])
+                Ellipse(size=(i.get('radius')*self.size[0],i.get('radius')*self.size[0]),pos=[(x*z)+y  for x,y,z in zip(i.get('pos'),self.pos,self.size)])
+                
+            elif i.get('type') == 'Rectangle':
+                Color(*[x/255*(1-self.body.pos.values[2]/100) for x in i.get('color')])
+                Rectangle(size=(i.get('size')[0]*self.size[0],i.get('size')[1]*self.size[1]),pos=[(x*z)+y for x,y,z in zip(i.get('pos'),self.pos,self.size)])
+                
 
     
 
@@ -58,12 +61,14 @@ class body(Widget):
         print("0,0",self.parent.pos)
         self.x = self.body.pos.values[0] + self.parent.x
         self.y = self.body.pos.values[1] + self.parent.y
+        self.size = [abs(c*self.scale*100) for c in self.json.get("size")[:2]]
+        self.rt.pos = self.pos
+        self.rt.size = self.size
         print("x",self.x)
 
-        for i in self.canvas_list:
-            i[0].pos = [x+y for x,y in zip(i[1].get('pos'),self.pos)]
-            i[0].size = (i[1].get('radius')*self.scale,i[1].get('radius')*self.scale)
-
+        self.canvas.clear()
+        with self.canvas:
+            self.draw()
         
 
 class editAmbient(Popup):
@@ -117,11 +122,11 @@ class createBody(Popup):
         self.label_q = Label(text="charge =",size_hint_x=None,width=100,font_size=12.5)
         self.q = TextInput(multiline=False,size_hint_x=None,width=100,text=str(0),font_size=10,halign="center")
         self.label_size = Label(text="size =",size_hint_x=None,width=100,font_size=12.5)
-        self.nsize = TextInput(multiline=False,size_hint_x=None,width=100,text=str((10,10,10)),font_size=10,halign="center")
+        self.nsize = TextInput(multiline=False,size_hint_x=None,width=100,text=str((1,1,1)),font_size=10,halign="center")
         self.label_pos = Label(text="pos =",size_hint_x=None,width=100,font_size=12.5)
         self.npos = TextInput(multiline=False,size_hint_x=None,width=100,text=str((0,0,0)),font_size=10,halign="center")
         self.label_md2 = Label(text="md2_file = ",size_hint_x=None,width=100,font_size=10)
-        self.md2 = TextInput(multiline=False,size_hint_x=None,width=100,text=str(0),font_size=10,halign="center")
+        self.md2 = TextInput(multiline=False,size_hint_x=None,width=100,text="mod.md2",font_size=10,halign="center")
         
         self.add_widget(self.mainLayout)
         self.mainLayout.add_widget(self.inputs)

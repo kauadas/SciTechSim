@@ -7,12 +7,12 @@ def to_tuple(X: str):
         X = X.split(",")
         Y = []
         for i in X:
-            Y.append(int(i))
+            Y.append(float(i))
 
         return Y
     
     else:
-        return int(X)
+        return float(X)
 
 
 class Model:
@@ -21,6 +21,7 @@ class Model:
         self.facemap = facemap
 
     def Circle(self,pos: tuple,radius: int, color: tuple,face: int = 0) -> None: 
+        face = int(face)
         self.objs[face].append({
             "type": "Circle",
             "pos": pos,
@@ -31,10 +32,21 @@ class Model:
 
 
     def Line(self,pos: tuple,pos2: tuple, color: tuple,face: int = 0) -> None:
+        face = int(face)
         self.objs[face].append({
             "type": "Line",
             "pos": pos,
             "pos2": pos2,
+            "color": color,
+            "face": face
+        })
+
+    def Rectangle(self,pos: tuple,size: tuple, color: tuple,face: int = 0) -> None:
+        face = int(face)
+        self.objs[face].append({
+            "type": "Rectangle",
+            "pos": pos,
+            "size": size,
             "color": color,
             "face": face
         })
@@ -69,3 +81,6 @@ class Model:
 
             if line[0] == 'Circle':
                 self.Circle(*[to_tuple(x) for x in line[1::]])
+
+            if line[0] == 'Rectangle':
+                self.Rectangle(*[to_tuple(x) for x in line[1::]])
